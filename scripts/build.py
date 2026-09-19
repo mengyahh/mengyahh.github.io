@@ -107,21 +107,32 @@ def year_key(d):
     return d[:4] if len(d) in (4, 6) else d       # "2015-2019" stays its own group
 
 
-def render_photos(e):
+def thumb_width(im):
+    """Pixel width of the -t.webp rendition (longest side is capped at 640)."""
+    longest = max(im['w'], im['h'])
+    return im['w'] if longest <= 640 else round(im['w'] * 640 / longest)
+
+
+def render_media(e):
+    """Photos as a scroll-snap carousel (one photo = a plain frame; controls are added by carousel.js)."""
     imgs = e['images']
     if not imgs:
         return ''
-    cls = {1: 'one', 2: 'two'}.get(len(imgs), '')
-    out = []
+    n = len(imgs)
+    slides = []
     for i, im in enumerate(imgs, 1):
-        alt = f"{e['title']}（照片 {i}/{len(imgs)}）"
-        style = f' style="--ar:{im["w"]} / {im["h"]}"' if cls == 'one' else ''
-        out.append(
-            f'<a class="ph" href="../assets/cooking/{im["src"]}" data-group="{esc(e["id"])}" '
-            f'data-title="{esc(e["title"])}" data-alt="{esc(alt)}"{style}>'
-            f'<img src="../assets/cooking/{im["thumb"]}" width="{im["w"]}" height="{im["h"]}" '
+        alt = f"{e['title']}（照片 {i}/{n}）"
+        fit = 'cover' if im['w'] / im['h'] >= 1.2 else 'contain'   # keep portrait shots whole
+        slides.append(
+            f'<a class="ph slide {fit}" href="../assets/cooking/{im["src"]}" data-group="{esc(e["id"])}" '
+            f'data-title="{esc(e["title"])}" data-alt="{esc(alt)}" role="group" '
+            f'aria-roledescription="slide" aria-label="{i} / {n}">'
+            f'<img src="../assets/cooking/{im["thumb"]}" '
+            f'srcset="../assets/cooking/{im["thumb"]} {thumb_width(im)}w, ../assets/cooking/{im["src"]} {im["w"]}w" '
+            f'sizes="(max-width: 820px) 100vw, 420px" width="{im["w"]}" height="{im["h"]}" '
             f'alt="{esc(alt)}" loading="lazy" decoding="async"></a>')
-    return f'<div class="photos {cls}">{"".join(out)}</div>'
+    return (f'<div class="media"><div class="carousel" role="group" aria-roledescription="carousel" '
+            f'aria-label="{esc(e["title"])} 的照片"><div class="track">{"".join(slides)}</div></div></div>')
 
 
 def render_entry(e):
@@ -133,10 +144,12 @@ def render_entry(e):
             blocks.append('<ul>' + ''.join(f'<li>{t}</li>' for t in b['items']) + '</ul>')
     place = f'<span class="chip">@{esc(e["place"])}</span>' if e.get('place') else ''
     body = f'<div class="body">{"".join(blocks)}</div>' if blocks else ''
-    return (f'<article class="entry" id="{esc(e["id"])}">'
-            f'<div class="meta"><time>{fmt_date(e["date"])}</time>{place}</div>'
-            f'<h3><a href="#{esc(e["id"])}">{esc(e["title"])}</a></h3>'
-            f'{body}{render_photos(e)}</article>')
+    cls = ' '.join(c for c in ('entry', '' if e['images'] else 'no-media', '' if blocks else 'no-text') if c)
+    # text first in the DOM (reading order); CSS puts the photos on the right / above on phones
+    return (f'<article class="{cls}" id="{esc(e["id"])}">'
+            f'<div class="text"><div class="meta"><time>{fmt_date(e["date"])}</time>{place}</div>'
+            f'<h3><a href="#{esc(e["id"])}">{esc(e["title"])}</a></h3>{body}</div>'
+            f'{render_media(e)}</article>')
 
 
 def build_cooking(entries):
@@ -165,7 +178,7 @@ def build_cooking(entries):
     return layout(base='../', title='料理紀錄 · 萌芽中。',
                   desc=f'萌芽的料理紀錄：{len(entries)} 則煮過的東西、心得與照片。',
                   path='/cooking/', body=body, current='cooking',
-                  css=('cooking',), js=('lightbox',), og_image=og)
+                  css=('cooking',), js=('carousel', 'lightbox'), og_image=og)
 
 
 def build_home(entries):

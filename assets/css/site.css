@@ -44,7 +44,7 @@ a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .serif, h1, h2, h3, .wordmark { font-family: "Noto Serif TC", "Songti TC", serif; }
 .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace; }
-.wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+.wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
 .skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 4px; z-index: 20; }
 .skip:focus { left: 8px; }
 

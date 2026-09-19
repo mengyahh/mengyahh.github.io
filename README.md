@@ -13,7 +13,7 @@
 ```
 data/cooking.json        料理紀錄的內容來源（每則：日期、標題、文字、照片）
 assets/cooking/          照片（xxx.webp 大圖 1280px、xxx-t.webp 縮圖 640px，已去除 EXIF）
-assets/css, assets/js    樣式與燈箱
+assets/css, assets/js    樣式、輪播與燈箱
 scripts/build.py         由 data/cooking.json 產生 index.html、cooking/index.html、about/index.html
 ```
 
