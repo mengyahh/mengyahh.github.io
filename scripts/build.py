@@ -22,7 +22,7 @@ OLD_BLOG = ('舊部落格（2015–2020）', 'https://mengrr.mystrikingly.com/')
 BIO = '思想的巨人，行為的侏儒。努力探尋前進目標，想過上自由的生活。'
 EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
-GOATCOUNTER = os.environ.get('GOATCOUNTER', '')    # e.g. 'mengyahh'  ->  https://mengyahh.goatcounter.com
+GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh.goatcounter.com (set GOATCOUNTER= to build without tracking)
 esc = html.escape
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'

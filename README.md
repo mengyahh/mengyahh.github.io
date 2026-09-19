@@ -40,7 +40,7 @@ scripts/build.py         由 data/*.json 產生 index.html、cooking/、blog/、
 2. GoatCounter → Settings → 勾選 **Allow adding visitor counts on your website**
 3. 把 `scripts/build.py` 裡的 `GOATCOUNTER = os.environ.get('GOATCOUNTER', '')` 的預設值改成你的代碼，重新執行 `python scripts/build.py`
 
-代碼留空時，網站完全不載入任何追蹤程式。
+目前站點代碼是 `mengyahh`。想暫時關掉追蹤（例如本機測試）：`GOATCOUNTER= python scripts/build.py`（代碼留空時網站完全不載入任何追蹤程式）。
 
 ## 新增一篇部落格文章
 
