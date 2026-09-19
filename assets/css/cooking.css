@@ -27,7 +27,6 @@
 .entry.no-media, .entry.no-text { grid-template-columns: minmax(0, 1fr); }
 .entry .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 0 0 6px; }
 .entry time { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--muted); letter-spacing: 0.04em; }
-.chip { font-size: 12px; line-height: 1; padding: 4px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
 .entry h3 { font-size: 22px; line-height: 1.4; margin: 0 0 12px; font-weight: 600; text-wrap: balance; }
 .entry h3 a { color: inherit; text-decoration: none; }
 .entry h3 a:hover::after { content: " #"; color: var(--muted); font-weight: 400; }

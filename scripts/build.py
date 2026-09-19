@@ -18,7 +18,6 @@ from collections import OrderedDict
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://mengyahh.com'
 GSITE = 'https://sites.google.com/view/mengyahh'   # not-yet-migrated pages still live here
-OLD_BLOG = ('舊部落格（2015–2020）', 'https://mengrr.mystrikingly.com/')
 BIO = '思想的巨人，行為的侏儒。努力探尋前進目標，想過上自由的生活。'
 EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
@@ -98,7 +97,6 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
     <div class="links">
       <a href="{INSTAGRAM}" rel="noopener">Instagram ↗</a>
       <a href="{base}blog/">部落格</a>
-      <a href="{esc(OLD_BLOG[1])}" rel="noopener">{esc(OLD_BLOG[0])} ↗</a>
     </div>
     <p class="copy">© 萌芽中。 All Rights Reserved.</p>
     {stats_note}
@@ -179,14 +177,12 @@ def build_cooking(entries):
     for y, es in years.items():
         sections.append(
             f'<section class="year" id="y{esc(y)}"><h2 class="serif">{esc(fmt_date(y))}'
-            f'<small>{len(es)} 則</small></h2>{"".join(render_entry(e) for e in es)}</section>')
-    span_first = fmt_date(list(years)[-1]).split('–')[0]
-    span_last = fmt_date(list(years)[0])
+            f'</h2>{"".join(render_entry(e) for e in es)}</section>')
     body = f'''<div class="wrap">
   <div class="page-head">
     <p class="eyebrow">Cooking Notes</p>
     <h1>料理紀錄</h1>
-    <p class="lede">煮過的東西、當時的心得，和照片。共 {len(entries)} 則，從 {span_first} 到 {span_last}。</p>
+    <p class="lede">煮過的東西、當時的心得，和照片。</p>
     <ul class="years" aria-label="依年份跳轉">{chips}</ul>
   </div>
   {"".join(sections)}
@@ -194,7 +190,7 @@ def build_cooking(entries):
     first_img = next((im for e in entries for im in e['images']), None)
     og = f'{SITE}/assets/cooking/{first_img["src"]}' if first_img else None
     return layout(base='../', title='料理紀錄 · 萌芽中。',
-                  desc=f'萌芽的料理紀錄：{len(entries)} 則煮過的東西、心得與照片。',
+                  desc='萌芽的料理紀錄：煮過的東西、心得與照片。',
                   path='/cooking/', body=body, current='cooking',
                   css=('cooking',), js=('carousel', 'lightbox'), og_image=og)
 
@@ -210,13 +206,30 @@ def fmt_full(d):
     return d.replace('-', '.')
 
 
-def build_blog_index(articles):
-    series = OrderedDict()
+def plain_text(h):
+    """HTML fragment -> single-line plain text (used for the search index)."""
+    t = re.sub(r'</?(p|br|li|h[1-6]|figcaption|blockquote)\b[^>]*>', ' ', h)
+    t = re.sub(r'<[^>]+>', '', t)
+    return re.sub(r'\s+', ' ', html.unescape(t)).strip()
+
+
+def build_search_index(articles):
+    return json.dumps([{'slug': a['slug'], 'title': a['title'], 'series': a['series'], 'tags': a.get('tags', []),
+                        'abstract': a['abstract'], 'text': plain_text(a['html'])} for a in articles],
+                      ensure_ascii=False, separators=(',', ':'))
+
+
+def series_order(articles):
+    """Series ordered by their most recent article (articles are already newest-first)."""
+    seen = []
     for a in articles:
-        series[a['series']] = series.get(a['series'], 0) + 1
-    filters = [f'<button type="button" class="fchip" data-series="" aria-pressed="true">全部 <small>{len(articles)}</small></button>']
-    for s, n in series.items():
-        filters.append(f'<button type="button" class="fchip" data-series="{esc(s)}" aria-pressed="false">{esc(s)} <small>{n}</small></button>')
+        if a['series'] not in seen:
+            seen.append(a['series'])
+    return seen
+
+
+def build_blog_index(articles):
+    series = series_order(articles)
     years = OrderedDict()
     for a in articles:
         years.setdefault(a['date'][:4], []).append(a)
@@ -230,24 +243,63 @@ def build_blog_index(articles):
                 cover = (f'<div class="row-cover"><img src="../assets/{c["src"]}" width="{c["w"]}" height="{c["h"]}" '
                          f'alt="" loading="lazy" decoding="async"></div>')
             rows.append(
-                f'<li class="post-row" data-series="{esc(a["series"])}"><a href="{a["slug"]}/">'
+                f'<li class="post-row" data-slug="{a["slug"]}" data-series="{esc(a["series"])}"><a href="{a["slug"]}/">'
                 f'<div class="row-text"><p class="row-meta"><time datetime="{a["date"]}">{fmt_full(a["date"])}</time>'
-                f'<span class="chip">{esc(a["series"])}</span><span>約 {a["minutes"]} 分鐘</span></p>'
+                f'<span class="chip">{esc(a["series"])}</span></p>'
                 f'<h3>{esc(a["title"])}</h3><p class="row-abs">{esc(short(a["abstract"], 120))}</p></div>{cover}</a></li>')
-        sections.append(f'<section class="year" data-year="{y}"><h2 class="serif">{y}<small>{len(arts)} 篇</small></h2>'
+        sections.append(f'<section class="year" id="y{y}" data-year="{y}"><h2 class="serif">{y}</h2>'
                         f'<ul class="post-list">{"".join(rows)}</ul></section>')
-    body = f'''<div class="wrap">
+    series_items = ''.join(
+        f'<li><button type="button" class="side-btn" data-series="{esc(sname)}" aria-pressed="false">{esc(sname)}</button></li>'
+        for sname in series)
+    year_items = ''.join(f'<li><a class="side-btn" href="#y{y}" data-year="{y}" aria-pressed="false">{y}</a></li>' for y in years)
+    recent = ''.join(f'<li><a href="{a["slug"]}/">{esc(a["title"])}</a></li>' for a in articles[:5])
+    body = f"""<div class="wrap">
   <div class="page-head">
     <p class="eyebrow">Blog</p>
     <h1>部落格</h1>
-    <p class="lede">共 {len(articles)} 篇文章，從 {articles[-1]["date"][:4]} 到 {articles[0]["date"][:4]}：階段回顧、閱讀筆記與日常記事。更早的舊文章在<a href="{esc(OLD_BLOG[1])}" rel="noopener">舊部落格 ↗</a>。</p>
-    <div class="filters" role="group" aria-label="依系列篩選" hidden>{"".join(filters)}</div>
+    <p class="lede">階段回顧、閱讀筆記、日常記事與創作。</p>
   </div>
-  {"".join(sections)}
-</div>'''
+  <div class="blog-layout">
+    <div class="blog-main">
+      {"".join(sections)}
+      <p class="no-result" hidden>找不到符合的文章，換個關鍵字或清除篩選試試。</p>
+    </div>
+    <aside class="side" aria-label="找文章">
+      <div class="side-find">
+        <section class="widget js-only" hidden>
+          <form class="search" role="search" data-index="../assets/data/blog-search.json">
+            <label class="sr" for="q">搜尋文章</label>
+            <input id="q" type="search" name="q" placeholder="搜尋標題與內文" autocomplete="off">
+          </form>
+        </section>
+        <section class="widget js-only" hidden>
+          <h2>系列</h2>
+          <ul class="side-list series-list">{series_items}</ul>
+        </section>
+        <section class="widget">
+          <h2>年份</h2>
+          <ul class="side-list year-list">{year_items}</ul>
+        </section>
+        <button type="button" class="clear js-only" hidden>清除篩選</button>
+      </div>
+      <div class="side-more">
+        <section class="widget">
+          <h2>近期文章</h2>
+          <ul class="recent">{recent}</ul>
+        </section>
+        <section class="widget about">
+          <h2>萌芽中。</h2>
+          <p>{esc(BIO)}</p>
+          <p class="links"><a href="mailto:{EMAIL}">Email</a><a href="{INSTAGRAM}" rel="noopener">Instagram ↗</a></p>
+        </section>
+      </div>
+    </aside>
+  </div>
+</div>"""
     first = next((a['cover'] for a in articles if a.get('cover')), None)
     return layout(base='../', title='部落格 · 萌芽中。',
-                  desc=f'萌芽的部落格：{len(articles)} 篇階段回顧、閱讀筆記與日常記事。',
+                  desc='萌芽的部落格：階段回顧、閱讀筆記、日常記事與創作。',
                   path='/blog/', body=body, current='blog', css=('cooking', 'blog'), js=('blog-filter',),
                   og_image=f'{SITE}/assets/{first["src"]}' if first else None)
 
@@ -256,8 +308,7 @@ def build_post(a, newer, older):
     path = f'/blog/{a["slug"]}/'
     tags = ''.join(f'<span class="chip">{esc(t)}</span>' for t in a.get('tags', []))
     views = (f'<span class="views" data-code="{esc(GOATCOUNTER)}" hidden></span>' if GOATCOUNTER else '')
-    meta = ' · '.join(x for x in (f'<time datetime="{a["date"]}">{fmt_full(a["date"])}</time>',
-                                  f'約 {a["minutes"]} 分鐘閱讀', views) if x)
+    meta = f'<time datetime="{a["date"]}">{fmt_full(a["date"])}</time>{views}'
 
     def nav(art, label, cls):
         if not art:
@@ -301,13 +352,13 @@ def build_home(entries, articles):
   <div class="cards">
     <a class="card card-cooking" href="cooking/">
       <h2 class="serif">料理紀錄</h2>
-      <p>煮過的東西、心得與照片（{len(entries)} 則）。</p>
+      <p>煮過的東西、心得與照片。</p>
       <div class="thumbs" aria-hidden="true">{thumbs}</div>
     </a>
     <div class="card card-blog">
       <h2 class="serif"><a href="blog/">部落格</a></h2>
       <ul class="latest">{posts}</ul>
-      <p class="more"><a href="blog/">全部 {len(articles)} 篇文章 →</a> <a href="{esc(OLD_BLOG[1])}" rel="noopener">{esc(OLD_BLOG[0])} ↗</a></p>
+      <p class="more"><a href="blog/">所有文章 →</a></p>
     </div>
     <a class="card" href="{GSITE}/about" rel="noopener">
       <h2 class="serif">關於 ↗</h2>
@@ -373,6 +424,7 @@ if __name__ == '__main__':
     print('wrote blog/<slug>/index.html x', len(articles))
     write('index.html', build_home(entries, articles))
     write('about/index.html', build_about_stub())
+    write('assets/data/blog-search.json', build_search_index(articles))
     write('sitemap.xml', build_sitemap(articles))
     write('robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
     print('view counts:', f'GoatCounter "{GOATCOUNTER}"' if GOATCOUNTER else 'off (GOATCOUNTER not set)')
