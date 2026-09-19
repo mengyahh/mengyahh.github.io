@@ -11,6 +11,9 @@
   var empty = document.querySelector('.no-result');
   Array.prototype.forEach.call(document.querySelectorAll('.js-only'), function (el) { el.hidden = false; });
 
+  var PAGE = 10;                                            // articles shown at first / per "load more"
+  var limit = PAGE;
+  var moreBox = document.querySelector('.load-more');
   var state = { q: '', cat: '', year: '' };
   var index = null, indexPromise = null;
   var origAbs = {};
@@ -67,8 +70,15 @@
         abs.textContent = origAbs[slug];
       }
       r.hidden = !ok;
+      r._match = ok;
       if (ok) visible++;
     });
+    var shown = 0;                                            // only the first `limit` matches stay visible
+    rows.forEach(function (r) {
+      if (!r._match) return;
+      if (shown >= limit) r.hidden = true; else shown++;
+    });
+    if (moreBox) moreBox.hidden = shown >= visible;
     years.forEach(function (y) { y.hidden = !y.querySelector('.post-row:not([hidden])'); });
     if (empty) empty.hidden = visible > 0 || (terms().length > 0 && !index);   // wait for the index before saying "nothing found"
     catBtns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-cat') === state.cat ? 'true' : 'false'); });
@@ -83,7 +93,10 @@
     } catch (e) { /* file:// or blocked: ignore */ }
   }
 
+  function showMore() { limit += PAGE; apply(); }
+
   function setState(patch) {
+    limit = PAGE;                                             // a new search/filter starts from the top again
     for (var k in patch) state[k] = patch[k];
     if (state.q && !index) { loadIndex().then(apply); }
     apply();
@@ -105,6 +118,14 @@
   if (form) form.addEventListener('submit', function (ev) { ev.preventDefault(); });
   if (clearBtn) clearBtn.addEventListener('click', function () { if (input) input.value = ''; setState({ q: '', cat: '', year: '' }); });
 
+  if (moreBox) {
+    var btn = moreBox.querySelector('button');
+    btn.addEventListener('click', showMore);
+    if ('IntersectionObserver' in window) {                   // reaching the bottom loads the next batch
+      new IntersectionObserver(function (es) { if (es[0].isIntersecting && !moreBox.hidden) showMore(); }, { rootMargin: '300px 0px' }).observe(moreBox);
+    }
+  }
+
   // restore state from the URL (?q=&cat=&year=)
   try {
     var qs = new URLSearchParams(location.search);
@@ -112,4 +133,5 @@
     if (input) input.value = init.q;
     if (init.q || init.cat || init.year) setState(init);
   } catch (e) { /* ignore */ }
+  apply();                                                    // hide everything beyond the first batch
 })();

@@ -18,7 +18,6 @@ from collections import OrderedDict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://mengyahh.com'
-GSITE = 'https://sites.google.com/view/mengyahh'   # not-yet-migrated pages still live here
 BIO = '思想的巨人，行為的侏儒。努力探尋前進目標，想過上自由的生活。'
 EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
@@ -44,16 +43,16 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
 
 
 def resolve(s, base):
-    """Turn the importer's @ASSET/ and @BLOG/ placeholders into paths relative to the current page."""
-    return s.replace('@ASSET/', f'{base}assets/').replace('@BLOG/', f'{base}blog/')
+    """Turn the importer's @ASSET/, @BLOG/ and @SITE/ placeholders into paths relative to the current page."""
+    return s.replace('@ASSET/', f'{base}assets/').replace('@BLOG/', f'{base}blog/').replace('@SITE/', base)
 
 
 def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=None, og_type='website',
            extra_head=''):
     """Shared page shell. `base` is the relative prefix back to the site root ('', '../' or '../../')."""
     nav = [
-        ('關於', f'{GSITE}/about', 'about'),
-        ('作品集', f'{GSITE}/portfolio', 'portfolio'),
+        ('關於', f'{base}about/', 'about'),
+        ('作品集', f'{base}portfolio/', 'portfolio'),
         ('料理紀錄', f'{base}cooking/', 'cooking'),
         ('部落格', f'{base}blog/', 'blog'),
     ]
@@ -206,7 +205,7 @@ def build_cooking(entries):
     return layout(base='../', title='料理紀錄 · 萌芽中。',
                   desc='萌芽的料理紀錄：煮過的東西、心得與照片。',
                   path='/cooking/', body=body, current='cooking',
-                  css=('cooking',), js=('carousel', 'lightbox'), og_image=og)
+                  css=('cooking', 'lightbox'), js=('carousel', 'lightbox'), og_image=og)
 
 
 # ------------------------------------------------------------------ blog
@@ -294,6 +293,7 @@ def build_blog_index(articles):
     <div class="blog-main">
       {"".join(sections)}
       <p class="no-result" hidden>找不到符合的文章，換個關鍵字或清除篩選試試。</p>
+      <div class="load-more" hidden><button type="button" class="btn ghost">顯示更多文章</button></div>
     </div>
     <aside class="side" aria-label="找文章">
       <div class="side-find">
@@ -362,6 +362,9 @@ def build_post(a, newer, older):
         return (f'<a class="pn {cls}" href="../{art["slug"]}/"><small>{label}</small>'
                 f'<span class="serif">{esc(art["title"])}</span></a>')
 
+    c = a.get('cover')
+    cover_html = (f'<figure class="post-cover narrow"><img src="../../assets/{c["src"]}" width="{c["w"]}" height="{c["h"]}" alt="" decoding="async"></figure>'
+                  if c and not a.get('cover_is_first_image') else '')
     body = f'''<article class="post">
   <header class="post-head narrow">
     <p class="eyebrow"><a href="../">部落格</a></p>
@@ -369,6 +372,7 @@ def build_post(a, newer, older):
     <p class="post-meta">{meta}</p>
     {f'<div class="tags">{tags}</div>' if tags else ''}
   </header>
+  {cover_html}
   <div class="prose narrow">{resolve(a["html"], "../../")}</div>
   <nav class="post-nav narrow" aria-label="上一篇與下一篇">{nav(newer, "較新的文章 →", "newer")}{nav(older, "← 較舊的文章", "older")}</nav>
   {comments_section(a)}
@@ -408,12 +412,12 @@ def build_home(entries, articles):
       <ul class="latest">{posts}</ul>
       <p class="more"><a href="blog/">所有文章 →</a></p>
     </div>
-    <a class="card" href="{GSITE}/about" rel="noopener">
-      <h2 class="serif">關於 ↗</h2>
+    <a class="card" href="about/">
+      <h2 class="serif">關於</h2>
       <p>自我介紹與經歷。</p>
     </a>
-    <a class="card" href="{GSITE}/portfolio" rel="noopener">
-      <h2 class="serif">作品集 ↗</h2>
+    <a class="card" href="portfolio/">
+      <h2 class="serif">作品集</h2>
       <p>過往的接案與作品。</p>
     </a>
     <a class="card" href="https://understory.mengyahh.com" rel="noopener">
@@ -426,18 +430,101 @@ def build_home(entries, articles):
                   css=('home',))
 
 
-def build_about_stub():
-    target = f'{GSITE}/about'
-    head = (f'<meta http-equiv="refresh" content="0; url={target}">'
-            '<meta name="robots" content="noindex">')
-    body = (f'<div class="wrap"><div class="page-head"><h1>關於</h1>'
-            f'<p class="lede">正在前往關於頁⋯⋯如果沒有自動跳轉，請點 <a href="{target}">這裡</a>。</p></div></div>')
-    return layout(base='../', title='關於 · 萌芽中。', desc='關於萌芽', path='/about/', body=body,
-                  current='about', css=('cooking',), extra_head=head)
+def banner_html(base, banner):
+    return (f'<figure class="banner"><img src="{base}assets/{banner["src"]}" width="{banner["w"]}" height="{banner["h"]}" '
+            f'alt="" decoding="async"></figure>')
+
+
+def build_about(a):
+    base = '../'
+    secs = []
+    for sec in a['sections']:
+        tags = ''.join(f'<li>{esc(t)}</li>' for t in sec['tags'])
+        body = []
+        for b in sec['blocks']:
+            if b['type'] == 'p':
+                body.append(f'<p>{resolve(b["html"], base)}</p>')
+            else:
+                body.append(f'<{b["type"]}>' + ''.join(f'<li>{resolve(i, base)}</li>' for i in b['items']) + f'</{b["type"]}>')
+        secs.append(f'<section class="about-sec" id="{sec["id"]}"><div class="sec-side"><h2 class="serif">{esc(sec["title"])}</h2>'
+                    f'<ul class="tag-list">{tags}</ul></div><div class="sec-body">{"".join(body)}</div></section>')
+    btns = ''.join(f'<a class="btn{" ghost" if i else ""}" href="{esc(resolve(b["href"], base))}">⮕ {esc(b["label"])}</a>'
+                   for i, b in enumerate(a['buttons']))
+    pr = a['profile']
+    q = a['quote']
+    bio = ''.join(f'<p>{b}</p>' for b in pr['bio'])
+    body = f'''<div class="wrap">
+  {banner_html(base, a['banner'])}
+  <div class="page-head">
+    <p class="eyebrow">About</p>
+    <h1>關於</h1>
+  </div>
+  <blockquote class="quote"><p>{q["html"]}</p><cite>{esc(q["source"])}</cite></blockquote>
+  {"".join(secs)}
+  <div class="btn-row">{btns}</div>
+  <section class="profile">
+    <img src="{base}assets/{pr["img"]["src"]}" width="{pr["img"]["w"]}" height="{pr["img"]["h"]}" alt="萌芽的照片" loading="lazy" decoding="async">
+    <div>
+      <h2 class="serif">{esc(pr["name"])}</h2>
+      {bio}
+      <p>{pr["contact"]}</p>
+      <p class="links"><a href="{INSTAGRAM}" rel="noopener">Instagram ↗</a></p>
+    </div>
+  </section>
+</div>'''
+    return layout(base=base, title='關於 · 萌芽中。', desc='萌芽的自我介紹：接案 4 年的自由工作者，以內容轉譯、數位內容製作、企劃為主。',
+                  path='/about/', body=body, current='about', css=('pages',),
+                  og_image=f'{SITE}/assets/{a["profile"]["img"]["src"]}')
+
+
+def build_portfolio(pf, banner):
+    base = '../'
+    groups = []
+    for g in pf['groups']:
+        rows = []
+        for ri, r in enumerate(g['rows']):
+            n_media = len(r['media'])
+            has_video = any(m['type'] == 'video' for m in r['media'])
+            cls = 'wide' if has_video else {1: 'c1', 2: 'c2'}.get(n_media, 'c3')
+            items = []
+            gid = f'pf-{len(groups)}-{ri}'
+            for i, m in enumerate(r['media'], 1):
+                cap = f'<figcaption>{resolve(m["caption"], base)}</figcaption>' if m.get('caption') else ''
+                if m['type'] == 'video':
+                    items.append(
+                        f'<figure class="pf-item"><button type="button" class="yt" data-yt="{esc(m["yt"])}" aria-label="播放影片：{esc(r["label"])}">'
+                        f'<img src="{base}assets/{m["poster"]}" width="{m["w"]}" height="{m["h"]}" alt="" loading="lazy" decoding="async">'
+                        f'<span class="yt-play" aria-hidden="true"></span></button>{cap}</figure>')
+                elif m.get('href'):
+                    items.append(
+                        f'<figure class="pf-item"><a class="out" href="{esc(m["href"])}" target="_blank" rel="noopener">'
+                        f'<img src="{base}assets/{m["thumb"]}" width="{m["w"]}" height="{m["h"]}" alt="{esc(r["label"])}：作品 {i}" loading="lazy" decoding="async"></a>{cap}</figure>')
+                else:
+                    alt = f'{r["label"]}：作品 {i}'
+                    items.append(
+                        f'<figure class="pf-item"><a class="ph" href="{base}assets/{m["src"]}" data-group="{gid}" data-title="{esc(r["label"])}" data-alt="{esc(alt)}">'
+                        f'<img src="{base}assets/{m["thumb"]}" width="{m["w"]}" height="{m["h"]}" alt="{esc(alt)}" loading="lazy" decoding="async"></a>{cap}</figure>')
+            desc = ''.join(f'<p>{resolve(d, base)}</p>' for d in r['desc'])
+            rows.append(f'<article class="pf-row"><div class="pf-info"><h3>{esc(r["label"])}</h3>{desc}</div>'
+                        f'<div class="pf-grid {cls}">{"".join(items)}</div></article>')
+        title = g['title'] or g['kind']
+        kind = f'<span class="pf-kind">{esc(g["kind"])}</span>' if g['title'] else ''
+        groups.append(f'<section class="pf-group"><header class="pf-head">{kind}<h2 class="serif">{esc(title)}</h2></header>{"".join(rows)}</section>')
+    body = f'''<div class="wrap">
+  {banner_html(base, banner)}
+  <div class="page-head">
+    <p class="eyebrow">Portfolio</p>
+    <h1>作品集</h1>
+  </div>
+  {"".join(groups)}
+</div>'''
+    return layout(base=base, title='作品集 · 萌芽中。', desc='萌芽的作品集：科普教材、藝文市集、美編設計、動畫與影片、攝影。',
+                  path='/portfolio/', body=body, current='portfolio', css=('pages', 'lightbox'), js=('lightbox', 'yt'),
+                  og_image=f'{SITE}/assets/{banner["src"]}')
 
 
 def build_sitemap(articles):
-    urls = [('/', None), ('/cooking/', None), ('/blog/', articles[0]['date'] if articles else None)]
+    urls = [('/', None), ('/about/', None), ('/portfolio/', None), ('/cooking/', None), ('/blog/', articles[0]['date'] if articles else None)]
     urls += [(f'/blog/{a["slug"]}/', a['date']) for a in articles]
     rows = ''.join(f'<url><loc>{SITE}{p}</loc>' + (f'<lastmod>{d}</lastmod>' if d else '') + '</url>' for p, d in urls)
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -471,7 +558,10 @@ if __name__ == '__main__':
         write(f'blog/{a["slug"]}/index.html', build_post(a, newer, older), quiet=True)
     print('wrote blog/<slug>/index.html x', len(articles))
     write('index.html', build_home(entries, articles))
-    write('about/index.html', build_about_stub())
+    about = json.load(open(os.path.join(ROOT, 'data', 'about.json'), encoding='utf-8'))
+    portfolio = json.load(open(os.path.join(ROOT, 'data', 'portfolio.json'), encoding='utf-8'))
+    write('about/index.html', build_about(about))
+    write('portfolio/index.html', build_portfolio(portfolio, about['banner']))
     write('assets/data/blog-search.json', build_search_index(articles))
     write('sitemap.xml', build_sitemap(articles))
     write('robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')

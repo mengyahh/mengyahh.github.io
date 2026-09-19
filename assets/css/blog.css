@@ -63,6 +63,11 @@ mark { background: var(--accent-soft); color: inherit; border-radius: 3px; paddi
 .post-row > a:hover .row-cover img { transform: scale(1.04); }
 
 /* article */
+.post-cover { margin: 26px auto 0; }
+.post-cover img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 8; object-fit: cover; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
+.load-more { text-align: center; margin: 36px 0 8px; }
+.load-more[hidden] { display: none; }
+.load-more .btn { cursor: pointer; font: inherit; font-size: 15px; font-weight: 700; }
 .post-head { padding-top: 56px; padding-bottom: 8px; }
 .post-head .eyebrow a { color: inherit; text-decoration: none; }
 .post-head .eyebrow a:hover { text-decoration: underline; }
