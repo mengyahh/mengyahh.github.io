@@ -29,8 +29,13 @@ esc = html.escape
 COMMENTS_API = os.environ.get('COMMENTS_API', '')            # e.g. https://comments.mengyahh.com
 TURNSTILE_SITEKEY = os.environ.get('TURNSTILE_SITEKEY', '')  # public site key from Cloudflare Turnstile
 
-# Blog categories (an article can belong to several). Unlisted ones are appended after these.
-CATEGORY_ORDER = ['心得', '日常', '創作', '其他']
+# Blog categories. An article can belong to several. The sidebar shows them in these groups, in this order;
+# categories with no article are hidden, and any category not listed here is appended to the last group.
+CATEGORY_GROUPS = [
+    ('類型', ['各種心得', '日常記事', '創作', '階段回顧', '其他']),
+    ('主題', ['旅遊記事', '飲食料理', '自然筆記', '日本打工度假']),
+]
+CATEGORY_ORDER = [c for _, cats in CATEGORY_GROUPS for c in cats]
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
          '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -228,18 +233,22 @@ def build_search_index(articles):
                       ensure_ascii=False, separators=(',', ':'))
 
 
-def category_order(articles):
-    """Categories in CATEGORY_ORDER first, then any new ones in the order they first appear."""
-    used = []
-    for a in articles:
-        for c in a['categories']:
-            if c not in used:
-                used.append(c)
-    return [c for c in CATEGORY_ORDER if c in used] + [c for c in used if c not in CATEGORY_ORDER]
+def sort_cats(cats):
+    """An article's categories in sidebar order (unknown ones last)."""
+    return sorted(cats, key=lambda c: CATEGORY_ORDER.index(c) if c in CATEGORY_ORDER else len(CATEGORY_ORDER))
+
+
+def category_groups(articles):
+    """[(group title, [categories that have articles])] following CATEGORY_GROUPS."""
+    used = {c for a in articles for c in a['categories']}
+    groups = [(title, [c for c in cats if c in used]) for title, cats in CATEGORY_GROUPS]
+    extra = sorted(used - set(CATEGORY_ORDER))
+    if extra and groups:
+        groups[-1] = (groups[-1][0], groups[-1][1] + extra)
+    return [(t, cs) for t, cs in groups if cs]
 
 
 def build_blog_index(articles):
-    cats = category_order(articles)
     years = OrderedDict()
     for a in articles:
         years.setdefault(a['date'][:4], []).append(a)
@@ -252,24 +261,34 @@ def build_blog_index(articles):
                 c = a['cover']
                 cover = (f'<div class="row-cover"><img src="../assets/{c["src"]}" width="{c["w"]}" height="{c["h"]}" '
                          f'alt="" loading="lazy" decoding="async"></div>')
-            chips = ''.join(f'<span class="chip">{esc(c)}</span>' for c in a['categories'])
+            cats_sorted = sort_cats(a['categories'])
+            chips = ''.join(f'<span class="chip">{esc(c)}</span>' for c in cats_sorted)
             rows.append(
-                f'<li class="post-row" data-slug="{a["slug"]}" data-cats="{esc("|".join(a["categories"]))}"><a href="{a["slug"]}/">'
+                f'<li class="post-row" data-slug="{a["slug"]}" data-cats="{esc("|".join(cats_sorted))}"><a href="{a["slug"]}/">'
                 f'<div class="row-text"><p class="row-meta"><time datetime="{a["date"]}">{fmt_full(a["date"])}</time>'
                 f'{chips}</p>'
                 f'<h3>{esc(a["title"])}</h3><p class="row-abs">{esc(short(a["abstract"], 120))}</p></div>{cover}</a></li>')
         sections.append(f'<section class="year" id="y{y}" data-year="{y}"><h2 class="serif">{y}</h2>'
                         f'<ul class="post-list">{"".join(rows)}</ul></section>')
-    cat_items = ''.join(
-        f'<li><button type="button" class="side-btn" data-cat="{esc(cname)}" aria-pressed="false">{esc(cname)}</button></li>'
-        for cname in cats)
-    year_items = ''.join(f'<li><a class="side-btn" href="#y{y}" data-year="{y}" aria-pressed="false">{y}</a></li>' for y in years)
+    cat_widgets = ''.join(
+        f'<section class="widget js-only" hidden><h2>{esc(title)}</h2><ul class="side-list cat-list">'
+        + ''.join(f'<li><button type="button" class="side-btn" data-cat="{esc(cname)}" aria-pressed="false">{esc(cname)}</button></li>'
+                  for cname in names)
+        + '</ul></section>'
+        for title, names in category_groups(articles))
+    year_chips = ''.join(f'<li><a href="#y{y}" data-year="{y}" aria-pressed="false">{y}</a></li>' for y in years)
     recent = ''.join(f'<li><a href="{a["slug"]}/">{esc(a["title"])}</a></li>' for a in articles[:5])
+    recent_comments = (f'<section class="widget rc-widget" data-api="{esc(COMMENTS_API)}" hidden><h2>近期留言</h2>'
+                       f'<ul class="recent rc-list"></ul></section>') if COMMENTS_API else ''
     body = f"""<div class="wrap">
   <div class="page-head">
     <p class="eyebrow">Blog</p>
     <h1>部落格</h1>
     <p class="lede">心得、日常記事與創作。</p>
+    <div class="year-row">
+      <ul class="year-chips" aria-label="依年份篩選">{year_chips}</ul>
+      <button type="button" class="clear" hidden>清除篩選</button>
+    </div>
   </div>
   <div class="blog-layout">
     <div class="blog-main">
@@ -284,26 +303,14 @@ def build_blog_index(articles):
             <input id="q" type="search" name="q" placeholder="搜尋標題與內文" autocomplete="off">
           </form>
         </section>
-        <section class="widget js-only" hidden>
-          <h2>分類</h2>
-          <ul class="side-list cat-list">{cat_items}</ul>
-        </section>
-        <section class="widget">
-          <h2>年份</h2>
-          <ul class="side-list year-list">{year_items}</ul>
-        </section>
-        <button type="button" class="clear js-only" hidden>清除篩選</button>
+        {cat_widgets}
       </div>
       <div class="side-more">
         <section class="widget">
           <h2>近期文章</h2>
           <ul class="recent">{recent}</ul>
         </section>
-        <section class="widget about">
-          <h2>萌芽中。</h2>
-          <p>{esc(BIO)}</p>
-          <p class="links"><a href="mailto:{EMAIL}">Email</a><a href="{INSTAGRAM}" rel="noopener">Instagram ↗</a></p>
-        </section>
+        {recent_comments}
       </div>
     </aside>
   </div>
@@ -311,7 +318,8 @@ def build_blog_index(articles):
     first = next((a['cover'] for a in articles if a.get('cover')), None)
     return layout(base='../', title='部落格 · 萌芽中。',
                   desc='萌芽的部落格：心得、日常記事與創作。',
-                  path='/blog/', body=body, current='blog', css=('cooking', 'blog'), js=('blog-filter',),
+                  path='/blog/', body=body, current='blog', css=('cooking', 'blog'),
+                  js=('blog-filter',) + (('recent-comments',) if COMMENTS_API else ()),
                   og_image=f'{SITE}/assets/{first["src"]}' if first else None)
 
 
@@ -343,7 +351,7 @@ def comments_section(a):
 
 def build_post(a, newer, older):
     path = f'/blog/{a["slug"]}/'
-    tags = (''.join(f'<a class="chip" href="../?cat={quote(c)}">{esc(c)}</a>' for c in a['categories'])
+    tags = (''.join(f'<a class="chip" href="../?cat={quote(c)}">{esc(c)}</a>' for c in sort_cats(a['categories']))
             + ''.join(f'<span class="chip">{esc(t)}</span>' for t in a.get('tags', [])))
     views = (f'<span class="views" data-code="{esc(GOATCOUNTER)}" hidden></span>' if GOATCOUNTER else '')
     meta = f'<time datetime="{a["date"]}">{fmt_full(a["date"])}</time>{views}'

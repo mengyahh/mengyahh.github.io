@@ -86,6 +86,7 @@
   function item(c, isReply) {
     var box = el('div', 'c-item' + (isReply ? ' is-reply' : ''));
     box.setAttribute('data-id', c.id);
+    box.id = 'c-' + c.id;
     box.appendChild(avatar(c));
     var main = el('div', 'c-main');
     var head = el('div', 'c-head');
@@ -131,10 +132,18 @@
     if (!tops.length) list.appendChild(el('p', 'c-empty', '還沒有留言，來當第一個吧。'));
   }
 
+  function jumpToHash() {
+    if (!/^#c-\d+$/.test(location.hash)) return;
+    var t = document.getElementById(location.hash.slice(1));
+    if (!t) return;
+    t.classList.add('is-target');
+    t.scrollIntoView({ block: 'center' });
+  }
+
   function load() {
     return fetch(API + '/comments?page=' + encodeURIComponent(PAGE))
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (d) { render(d.comments || []); })
+      .then(function (d) { render(d.comments || []); jumpToHash(); })
       .catch(function () { list.textContent = ''; list.appendChild(el('p', 'c-empty', '留言暫時載入失敗，請稍後重新整理。')); });
   }
 

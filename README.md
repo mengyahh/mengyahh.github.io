@@ -49,3 +49,6 @@ scripts/build.py         由 data/*.json 產生 index.html、cooking/、blog/、
 
 ## 留言功能
 部落格文章底下的留言區由 `worker/`（Cloudflare Worker + D1）提供，部署步驟見 [worker/README.md](worker/README.md)。`scripts/build.py` 的 `COMMENTS_API` 與 `TURNSTILE_SITEKEY` 兩個都設定時才會出現留言區；沒設定時網站完全不載入任何留言相關程式。
+
+## 分類與側欄
+部落格分類設定在 `scripts/build.py` 最上面的 `CATEGORY_GROUPS`：側欄分「類型」「主題」兩群，各群裡的順序就是這裡的順序。沒有文章的分類自動隱藏；新分類只要寫進文章的 `categories`，沒列在設定裡的會自動出現在最後一群。側欄順序：搜尋 → 類型 → 主題 → 近期文章 → 近期留言（留言功能啟用後才會出現）。

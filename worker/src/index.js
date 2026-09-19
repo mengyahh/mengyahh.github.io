@@ -2,6 +2,7 @@
  * mengyahh.com comments API — Cloudflare Worker + D1.  Single file, no dependencies.
  *
  * Public:  GET  /comments?page=/blog/2022-08-24/   approved comments of one page (never includes emails)
+ *          GET  /comments/recent                   the latest few approved comments across all pages (short snippets)
  *          POST /comments                          new comment (Turnstile-checked, moderated)
  * Admin:   GET  /admin                             moderation page (asks for ADMIN_TOKEN)
  *          GET/POST /admin/api/...                 needs "Authorization: Bearer <ADMIN_TOKEN>"
@@ -77,6 +78,22 @@ async function listComments(url, env, cors) {
     .bind(page)
     .all();
   return json({ comments: results.map(publicComment) }, 200, cors);
+}
+
+async function recentComments(env, cors) {
+  const { results } = await env.DB
+    .prepare("SELECT id, page, name, avatar, body, is_owner, created_at FROM comments WHERE status = 'approved' ORDER BY created_at DESC LIMIT 5")
+    .all();
+  return json({
+    comments: results.map((r) => ({
+      id: r.id,
+      page: r.page,
+      name: r.name,
+      is_owner: !!r.is_owner,
+      snippet: r.body.replace(/\s+/g, ' ').slice(0, 80) + (r.body.length > 80 ? '…' : ''),
+      created_at: r.created_at,
+    })),
+  }, 200, cors);
 }
 
 async function verifyTurnstile(env, token, ip) {
@@ -305,6 +322,7 @@ export default {
       }
       if (url.pathname.startsWith('/admin/api/')) return await adminApi(request, url, env);
       if (url.pathname === '/comments' && request.method === 'GET') return await listComments(url, env, cors);
+      if (url.pathname === '/comments/recent' && request.method === 'GET') return await recentComments(env, cors);
       if (url.pathname === '/comments' && request.method === 'POST') {
         if (!env.TURNSTILE_SECRET) return json({ error: '後端尚未設定完成（TURNSTILE_SECRET）' }, 500, cors);
         return await postComment(request, env, cors);

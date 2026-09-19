@@ -4,7 +4,7 @@
   if (!rows.length) return;
   var years = Array.prototype.slice.call(document.querySelectorAll('.year[data-year]'));
   var catBtns = Array.prototype.slice.call(document.querySelectorAll('.cat-list [data-cat]'));
-  var yearBtns = Array.prototype.slice.call(document.querySelectorAll('.year-list [data-year]'));
+  var yearBtns = Array.prototype.slice.call(document.querySelectorAll('.year-chips [data-year]'));
   var form = document.querySelector('form.search');
   var input = document.getElementById('q');
   var clearBtn = document.querySelector('.clear');

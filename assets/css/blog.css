@@ -2,6 +2,16 @@
 .narrow { max-width: 720px; margin-left: auto; margin-right: auto; padding-left: 24px; padding-right: 24px; }
 .page-head .lede a { color: var(--accent); }
 
+/* year filter row under the page title */
+.year-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 22px; }
+.year-chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.year-chips a {
+  display: inline-block; padding: 3px 14px; border: 1px solid var(--border-strong); border-radius: 999px;
+  font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink-soft); text-decoration: none;
+}
+.year-chips a:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+.year-chips a[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
 /* index layout: list on the left, finding tools on the right */
 .blog-layout { display: grid; grid-template-columns: minmax(0, 1fr) 264px; gap: 0 56px; align-items: start; margin-top: 8px; }
 .blog-main .year:first-child { margin-top: 20px; }
@@ -10,7 +20,7 @@
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 mark { background: var(--accent-soft); color: inherit; border-radius: 3px; padding: 0 2px; }
 
-.side { position: sticky; top: 76px; max-height: calc(100vh - 96px); overflow-y: auto; padding: 4px 4px 24px 0; scrollbar-width: thin; }
+.side { padding: 4px 0 24px; }          /* not sticky: with several widgets it would be taller than the window */
 .widget { margin: 0 0 30px; }
 .widget[hidden] { display: none; }
 .widget h2 { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
@@ -27,15 +37,12 @@ mark { background: var(--accent-soft); color: inherit; border-radius: 3px; paddi
 }
 .side-btn:hover { color: var(--accent); border-left-color: var(--accent); }
 .side-btn[aria-pressed="true"] { color: var(--accent); font-weight: 700; border-left-color: var(--accent); }
-.clear { font: inherit; font-size: 13.5px; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; margin: -14px 0 26px; }
+.clear { font: inherit; font-size: 13.5px; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; margin: 0; }
 .clear[hidden] { display: none; }
 .recent li { border-top: 1px solid var(--border); }
 .recent li:first-child { border-top: 0; }
 .recent a { display: block; padding: 8px 0; font-size: 14.5px; line-height: 1.55; color: var(--ink); text-decoration: none; }
 .recent a:hover { color: var(--accent); }
-.about p { margin: 0 0 8px; font-size: 14.5px; line-height: 1.75; color: var(--ink-soft); }
-.about .links { display: flex; gap: 16px; margin-top: 4px; }
-.about .links a { font-size: 14px; }
 
 /* list */
 .post-list { list-style: none; margin: 0; padding: 0; }
@@ -112,8 +119,6 @@ a.pn:hover { border-color: var(--accent); }
   .side-btn:hover, .side-btn[aria-pressed="true"] { border-color: var(--accent); }
   .side-btn[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
   .widget { margin-bottom: 20px; }
-  .side-find .widget:has(.year-list) { display: none; }   /* year headings in the list are enough on small screens */
-  .clear { margin: 0 0 16px; }
 }
 @media (max-width: 720px) {
   .post-row > a { grid-template-columns: minmax(0, 1fr) 104px; gap: 6px 16px; padding: 20px 0; }
@@ -185,3 +190,14 @@ a.pn:hover { border-color: var(--accent); }
   .c-avatar { width: 32px; height: 32px; }
   .c-time { margin-left: 0; width: 100%; order: 3; }
 }
+
+/* recent comments widget */
+.rc-widget[hidden] { display: none; }
+.rc-list a { display: block; padding: 9px 0; font-size: 14px; line-height: 1.6; color: var(--ink-soft); text-decoration: none; }
+.rc-list a:hover .rc-who { color: var(--accent); }
+.rc-who { font-weight: 700; color: var(--ink); }
+.rc-on { color: var(--muted); }
+.rc-text { display: block; margin-top: 2px; color: var(--ink-soft); overflow-wrap: anywhere; }
+.c-item.is-target { animation: c-flash 2.4s ease-out; }
+@keyframes c-flash { 0%, 40% { background: var(--accent-soft); } 100% { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .c-item.is-target { animation: none; background: var(--accent-soft); } }
