@@ -13,6 +13,7 @@ import json
 import os
 import re
 import shutil
+from urllib.parse import quote
 from collections import OrderedDict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -23,6 +24,9 @@ EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
 GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh.goatcounter.com (set GOATCOUNTER= to build without tracking)
 esc = html.escape
+
+# Blog categories (an article can belong to several). Unlisted ones are appended after these.
+CATEGORY_ORDER = ['心得', '日常', '創作', '其他']
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
          '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -137,11 +141,12 @@ def render_media(e):
     n = len(imgs)
     slides = []
     for i, im in enumerate(imgs, 1):
-        alt = f"{e['title']}（照片 {i}/{n}）"
+        cap = im.get('caption')
+        alt = f"{e['title']}：{cap}" if cap else f"{e['title']}（照片 {i}/{n}）"
         fit = 'cover' if im['w'] / im['h'] >= 1.2 else 'contain'   # keep portrait shots whole
         slides.append(
             f'<a class="ph slide {fit}" href="../assets/cooking/{im["src"]}" data-group="{esc(e["id"])}" '
-            f'data-title="{esc(e["title"])}" data-alt="{esc(alt)}" role="group" '
+            f'data-title="{esc(cap or e["title"])}" data-alt="{esc(alt)}" role="group" '
             f'aria-roledescription="slide" aria-label="{i} / {n}">'
             f'<img src="../assets/cooking/{im["thumb"]}" '
             f'srcset="../assets/cooking/{im["thumb"]} {thumb_width(im)}w, ../assets/cooking/{im["src"]} {im["w"]}w" '
@@ -155,9 +160,9 @@ def render_entry(e):
     blocks = []
     for b in e['blocks']:
         if b['type'] == 'p':
-            blocks.append(f'<p>{b["html"]}</p>')
+            blocks.append(f'<p>{resolve(b["html"], "../")}</p>')
         else:
-            blocks.append('<ul>' + ''.join(f'<li>{t}</li>' for t in b['items']) + '</ul>')
+            blocks.append('<ul>' + ''.join(f'<li>{resolve(t, "../")}</li>' for t in b['items']) + '</ul>')
     place = f'<span class="chip">@{esc(e["place"])}</span>' if e.get('place') else ''
     body = f'<div class="body">{"".join(blocks)}</div>' if blocks else ''
     cls = ' '.join(c for c in ('entry', '' if e['images'] else 'no-media', '' if blocks else 'no-text') if c)
@@ -214,22 +219,23 @@ def plain_text(h):
 
 
 def build_search_index(articles):
-    return json.dumps([{'slug': a['slug'], 'title': a['title'], 'series': a['series'], 'tags': a.get('tags', []),
+    return json.dumps([{'slug': a['slug'], 'title': a['title'], 'cats': a['categories'], 'tags': a.get('tags', []),
                         'abstract': a['abstract'], 'text': plain_text(a['html'])} for a in articles],
                       ensure_ascii=False, separators=(',', ':'))
 
 
-def series_order(articles):
-    """Series ordered by their most recent article (articles are already newest-first)."""
-    seen = []
+def category_order(articles):
+    """Categories in CATEGORY_ORDER first, then any new ones in the order they first appear."""
+    used = []
     for a in articles:
-        if a['series'] not in seen:
-            seen.append(a['series'])
-    return seen
+        for c in a['categories']:
+            if c not in used:
+                used.append(c)
+    return [c for c in CATEGORY_ORDER if c in used] + [c for c in used if c not in CATEGORY_ORDER]
 
 
 def build_blog_index(articles):
-    series = series_order(articles)
+    cats = category_order(articles)
     years = OrderedDict()
     for a in articles:
         years.setdefault(a['date'][:4], []).append(a)
@@ -242,23 +248,24 @@ def build_blog_index(articles):
                 c = a['cover']
                 cover = (f'<div class="row-cover"><img src="../assets/{c["src"]}" width="{c["w"]}" height="{c["h"]}" '
                          f'alt="" loading="lazy" decoding="async"></div>')
+            chips = ''.join(f'<span class="chip">{esc(c)}</span>' for c in a['categories'])
             rows.append(
-                f'<li class="post-row" data-slug="{a["slug"]}" data-series="{esc(a["series"])}"><a href="{a["slug"]}/">'
+                f'<li class="post-row" data-slug="{a["slug"]}" data-cats="{esc("|".join(a["categories"]))}"><a href="{a["slug"]}/">'
                 f'<div class="row-text"><p class="row-meta"><time datetime="{a["date"]}">{fmt_full(a["date"])}</time>'
-                f'<span class="chip">{esc(a["series"])}</span></p>'
+                f'{chips}</p>'
                 f'<h3>{esc(a["title"])}</h3><p class="row-abs">{esc(short(a["abstract"], 120))}</p></div>{cover}</a></li>')
         sections.append(f'<section class="year" id="y{y}" data-year="{y}"><h2 class="serif">{y}</h2>'
                         f'<ul class="post-list">{"".join(rows)}</ul></section>')
-    series_items = ''.join(
-        f'<li><button type="button" class="side-btn" data-series="{esc(sname)}" aria-pressed="false">{esc(sname)}</button></li>'
-        for sname in series)
+    cat_items = ''.join(
+        f'<li><button type="button" class="side-btn" data-cat="{esc(cname)}" aria-pressed="false">{esc(cname)}</button></li>'
+        for cname in cats)
     year_items = ''.join(f'<li><a class="side-btn" href="#y{y}" data-year="{y}" aria-pressed="false">{y}</a></li>' for y in years)
     recent = ''.join(f'<li><a href="{a["slug"]}/">{esc(a["title"])}</a></li>' for a in articles[:5])
     body = f"""<div class="wrap">
   <div class="page-head">
     <p class="eyebrow">Blog</p>
     <h1>部落格</h1>
-    <p class="lede">階段回顧、閱讀筆記、日常記事與創作。</p>
+    <p class="lede">心得、日常記事與創作。</p>
   </div>
   <div class="blog-layout">
     <div class="blog-main">
@@ -274,8 +281,8 @@ def build_blog_index(articles):
           </form>
         </section>
         <section class="widget js-only" hidden>
-          <h2>系列</h2>
-          <ul class="side-list series-list">{series_items}</ul>
+          <h2>分類</h2>
+          <ul class="side-list cat-list">{cat_items}</ul>
         </section>
         <section class="widget">
           <h2>年份</h2>
@@ -299,14 +306,15 @@ def build_blog_index(articles):
 </div>"""
     first = next((a['cover'] for a in articles if a.get('cover')), None)
     return layout(base='../', title='部落格 · 萌芽中。',
-                  desc='萌芽的部落格：階段回顧、閱讀筆記、日常記事與創作。',
+                  desc='萌芽的部落格：心得、日常記事與創作。',
                   path='/blog/', body=body, current='blog', css=('cooking', 'blog'), js=('blog-filter',),
                   og_image=f'{SITE}/assets/{first["src"]}' if first else None)
 
 
 def build_post(a, newer, older):
     path = f'/blog/{a["slug"]}/'
-    tags = ''.join(f'<span class="chip">{esc(t)}</span>' for t in a.get('tags', []))
+    tags = (''.join(f'<a class="chip" href="../?cat={quote(c)}">{esc(c)}</a>' for c in a['categories'])
+            + ''.join(f'<span class="chip">{esc(t)}</span>' for t in a.get('tags', [])))
     views = (f'<span class="views" data-code="{esc(GOATCOUNTER)}" hidden></span>' if GOATCOUNTER else '')
     meta = f'<time datetime="{a["date"]}">{fmt_full(a["date"])}</time>{views}'
 
@@ -318,7 +326,7 @@ def build_post(a, newer, older):
 
     body = f'''<article class="post">
   <header class="post-head narrow">
-    <p class="eyebrow"><a href="../">部落格</a> · {esc(a["series"])}</p>
+    <p class="eyebrow"><a href="../">部落格</a></p>
     <h1>{esc(a["title"])}</h1>
     <p class="post-meta">{meta}</p>
     {f'<div class="tags">{tags}</div>' if tags else ''}

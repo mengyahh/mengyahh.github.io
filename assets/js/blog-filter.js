@@ -1,9 +1,9 @@
-/* Blog index: search + series/year filters (sidebar). Without JS the whole list stays visible and the year links just jump. */
+/* Blog index: search + category/year filters (sidebar). Without JS the whole list stays visible and the year links just jump. */
 (function () {
   var rows = Array.prototype.slice.call(document.querySelectorAll('.post-row'));
   if (!rows.length) return;
   var years = Array.prototype.slice.call(document.querySelectorAll('.year[data-year]'));
-  var seriesBtns = Array.prototype.slice.call(document.querySelectorAll('.series-list [data-series]'));
+  var catBtns = Array.prototype.slice.call(document.querySelectorAll('.cat-list [data-cat]'));
   var yearBtns = Array.prototype.slice.call(document.querySelectorAll('.year-list [data-year]'));
   var form = document.querySelector('form.search');
   var input = document.getElementById('q');
@@ -11,7 +11,7 @@
   var empty = document.querySelector('.no-result');
   Array.prototype.forEach.call(document.querySelectorAll('.js-only'), function (el) { el.hidden = false; });
 
-  var state = { q: '', series: '', year: '' };
+  var state = { q: '', cat: '', year: '' };
   var index = null, indexPromise = null;
   var origAbs = {};
   rows.forEach(function (r) { var a = r.querySelector('.row-abs'); origAbs[r.getAttribute('data-slug')] = a ? a.textContent : ''; });
@@ -22,7 +22,7 @@
       indexPromise = fetch(form.getAttribute('data-index')).then(function (r) { return r.json(); }).then(function (list) {
         index = {};
         list.forEach(function (a) {
-          a.hay = (a.title + ' ' + a.series + ' ' + (a.tags || []).join(' ') + ' ' + a.abstract + ' ' + a.text).toLowerCase();
+          a.hay = (a.title + ' ' + (a.cats || []).join(' ') + ' ' + (a.tags || []).join(' ') + ' ' + a.abstract + ' ' + a.text).toLowerCase();
           index[a.slug] = a;
         });
         return index;
@@ -53,7 +53,7 @@
     rows.forEach(function (r) {
       var slug = r.getAttribute('data-slug');
       var ok = true;
-      if (state.series && r.getAttribute('data-series') !== state.series) ok = false;
+      if (state.cat && (r.getAttribute('data-cats') || '').split('|').indexOf(state.cat) === -1) ok = false;
       if (ok && state.year && r.closest('.year').getAttribute('data-year') !== state.year) ok = false;
       var abs = r.querySelector('.row-abs');
       if (ok && ts.length) {
@@ -71,13 +71,13 @@
     });
     years.forEach(function (y) { y.hidden = !y.querySelector('.post-row:not([hidden])'); });
     if (empty) empty.hidden = visible > 0 || (terms().length > 0 && !index);   // wait for the index before saying "nothing found"
-    seriesBtns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-series') === state.series ? 'true' : 'false'); });
+    catBtns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-cat') === state.cat ? 'true' : 'false'); });
     yearBtns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-year') === state.year ? 'true' : 'false'); });
-    if (clearBtn) clearBtn.hidden = !(state.q || state.series || state.year);
+    if (clearBtn) clearBtn.hidden = !(state.q || state.cat || state.year);
     try {
       var p = new URLSearchParams();
       if (state.q) p.set('q', state.q);
-      if (state.series) p.set('series', state.series);
+      if (state.cat) p.set('cat', state.cat);
       if (state.year) p.set('year', state.year);
       history.replaceState(null, '', location.pathname + (p.toString() ? '?' + p.toString() : ''));
     } catch (e) { /* file:// or blocked: ignore */ }
@@ -89,8 +89,8 @@
     apply();
   }
 
-  seriesBtns.forEach(function (b) {
-    b.addEventListener('click', function () { setState({ series: state.series === b.getAttribute('data-series') ? '' : b.getAttribute('data-series') }); });
+  catBtns.forEach(function (b) {
+    b.addEventListener('click', function () { setState({ cat: state.cat === b.getAttribute('data-cat') ? '' : b.getAttribute('data-cat') }); });
   });
   yearBtns.forEach(function (b) {
     b.addEventListener('click', function (ev) {
@@ -103,13 +103,13 @@
     input.addEventListener('input', function () { setState({ q: input.value.trim() }); });
   }
   if (form) form.addEventListener('submit', function (ev) { ev.preventDefault(); });
-  if (clearBtn) clearBtn.addEventListener('click', function () { if (input) input.value = ''; setState({ q: '', series: '', year: '' }); });
+  if (clearBtn) clearBtn.addEventListener('click', function () { if (input) input.value = ''; setState({ q: '', cat: '', year: '' }); });
 
-  // restore state from the URL (?q=&series=&year=)
+  // restore state from the URL (?q=&cat=&year=)
   try {
     var qs = new URLSearchParams(location.search);
-    var init = { q: qs.get('q') || '', series: qs.get('series') || '', year: qs.get('year') || '' };
+    var init = { q: qs.get('q') || '', cat: qs.get('cat') || '', year: qs.get('year') || '' };
     if (input) input.value = init.q;
-    if (init.q || init.series || init.year) setState(init);
+    if (init.q || init.cat || init.year) setState(init);
   } catch (e) { /* ignore */ }
 })();
