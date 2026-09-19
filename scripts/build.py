@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
-"""Render the static pages from data/cooking.json.
+"""Render the static pages from data/*.json.
 
     python scripts/build.py
 
-Writes: index.html, cooking/index.html, about/index.html   (stdlib only, no dependencies)
+Writes: index.html, cooking/, blog/, about/, sitemap.xml, robots.txt   (stdlib only, no dependencies)
+
+View counts: set GOATCOUNTER below (or the GOATCOUNTER env var) to your GoatCounter site code
+(the "xxx" in xxx.goatcounter.com). Leave it empty to build without any tracking.
 """
 import html
 import json
 import os
+import re
+import shutil
 from collections import OrderedDict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://mengyahh.com'
 GSITE = 'https://sites.google.com/view/mengyahh'   # not-yet-migrated pages still live here
-BLOGS = [
-    ('(2020-) 閱讀&生存報告', 'https://vocus.cc/salon/65a14b9efd89780001c9e45f/room/ThankYouGrowingPain'),
-    ('(2023-) 日常&思想', 'https://vocus.cc/salon/65a14b9efd89780001c9e45f/room/writingforanti-aging'),
-    ('(2015-2020) 創作&日常', 'https://mengrr.mystrikingly.com/'),
-]
+OLD_BLOG = ('舊部落格（2015–2020）', 'https://mengrr.mystrikingly.com/')
 BIO = '思想的巨人，行為的侏儒。努力探尋前進目標，想過上自由的生活。'
 EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
+GOATCOUNTER = os.environ.get('GOATCOUNTER', '')    # e.g. 'mengyahh'  ->  https://mengyahh.goatcounter.com
 esc = html.escape
 
 FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
@@ -29,13 +31,19 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
          '&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap">')
 
 
-def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=None, extra_head=''):
-    """Shared page shell. `base` is the relative prefix back to the site root ('' or '../')."""
+def resolve(s, base):
+    """Turn the importer's @ASSET/ and @BLOG/ placeholders into paths relative to the current page."""
+    return s.replace('@ASSET/', f'{base}assets/').replace('@BLOG/', f'{base}blog/')
+
+
+def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=None, og_type='website',
+           extra_head=''):
+    """Shared page shell. `base` is the relative prefix back to the site root ('', '../' or '../../')."""
     nav = [
         ('關於', f'{GSITE}/about', 'about'),
         ('作品集', f'{GSITE}/portfolio', 'portfolio'),
         ('料理紀錄', f'{base}cooking/', 'cooking'),
-        ('部落格', BLOGS[0][1], 'blog'),
+        ('部落格', f'{base}blog/', 'blog'),
     ]
     items = []
     for label, href, key in nav:
@@ -47,7 +55,12 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
     og = f'<meta property="og:image" content="{esc(og_image)}">' if og_image else ''
     styles = ''.join(f'<link rel="stylesheet" href="{base}assets/css/{c}.css">' for c in ('site',) + tuple(css))
     scripts = ''.join(f'<script src="{base}assets/js/{j}.js" defer></script>' for j in js)
-    blog_links = ''.join(f'<a href="{esc(u)}" rel="noopener">{esc(t)} ↗</a>' for t, u in BLOGS)
+    analytics = ''
+    stats_note = ''
+    if GOATCOUNTER:
+        analytics = (f'<script data-goatcounter="https://{GOATCOUNTER}.goatcounter.com/count" '
+                     f'async src="//gc.zgo.at/count.js"></script>')
+        stats_note = '<p class="copy">本站以 GoatCounter 統計瀏覽次數：不使用 cookie，也不記錄個人資料。</p>'
     return f'''<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -57,7 +70,7 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
 <meta name="description" content="{esc(desc)}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E">
 <link rel="canonical" href="{SITE}{path}">
-<meta property="og:type" content="website">
+<meta property="og:type" content="{og_type}">
 <meta property="og:site_name" content="萌芽中。">
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
@@ -84,12 +97,15 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
     <p>可能想聯絡的時候：<a href="mailto:{EMAIL}">{EMAIL}</a></p>
     <div class="links">
       <a href="{INSTAGRAM}" rel="noopener">Instagram ↗</a>
-      {blog_links}
+      <a href="{base}blog/">部落格</a>
+      <a href="{esc(OLD_BLOG[1])}" rel="noopener">{esc(OLD_BLOG[0])} ↗</a>
     </div>
     <p class="copy">© 萌芽中。 All Rights Reserved.</p>
+    {stats_note}
   </div>
 </footer>
 {scripts}
+{analytics}
 </body>
 </html>
 '''
@@ -106,6 +122,8 @@ def fmt_date(d):
 def year_key(d):
     return d[:4] if len(d) in (4, 6) else d       # "2015-2019" stays its own group
 
+
+# ------------------------------------------------------------------ cooking
 
 def thumb_width(im):
     """Pixel width of the -t.webp rendition (longest side is capped at 640)."""
@@ -181,12 +199,98 @@ def build_cooking(entries):
                   css=('cooking',), js=('carousel', 'lightbox'), og_image=og)
 
 
-def build_home(entries):
+# ------------------------------------------------------------------ blog
+
+def short(s, n=110):
+    s = re.sub(r'\s+', ' ', s or '').strip()
+    return s if len(s) <= n else s[:n - 1].rstrip() + '…'
+
+
+def fmt_full(d):
+    return d.replace('-', '.')
+
+
+def build_blog_index(articles):
+    series = OrderedDict()
+    for a in articles:
+        series[a['series']] = series.get(a['series'], 0) + 1
+    filters = [f'<button type="button" class="fchip" data-series="" aria-pressed="true">全部 <small>{len(articles)}</small></button>']
+    for s, n in series.items():
+        filters.append(f'<button type="button" class="fchip" data-series="{esc(s)}" aria-pressed="false">{esc(s)} <small>{n}</small></button>')
+    years = OrderedDict()
+    for a in articles:
+        years.setdefault(a['date'][:4], []).append(a)
+    sections = []
+    for y, arts in years.items():
+        rows = []
+        for a in arts:
+            cover = ''
+            if a.get('cover'):
+                c = a['cover']
+                cover = (f'<div class="row-cover"><img src="../assets/{c["src"]}" width="{c["w"]}" height="{c["h"]}" '
+                         f'alt="" loading="lazy" decoding="async"></div>')
+            rows.append(
+                f'<li class="post-row" data-series="{esc(a["series"])}"><a href="{a["slug"]}/">'
+                f'<div class="row-text"><p class="row-meta"><time datetime="{a["date"]}">{fmt_full(a["date"])}</time>'
+                f'<span class="chip">{esc(a["series"])}</span><span>約 {a["minutes"]} 分鐘</span></p>'
+                f'<h3>{esc(a["title"])}</h3><p class="row-abs">{esc(short(a["abstract"], 120))}</p></div>{cover}</a></li>')
+        sections.append(f'<section class="year" data-year="{y}"><h2 class="serif">{y}<small>{len(arts)} 篇</small></h2>'
+                        f'<ul class="post-list">{"".join(rows)}</ul></section>')
+    body = f'''<div class="wrap">
+  <div class="page-head">
+    <p class="eyebrow">Blog</p>
+    <h1>部落格</h1>
+    <p class="lede">共 {len(articles)} 篇文章，從 {articles[-1]["date"][:4]} 到 {articles[0]["date"][:4]}：階段回顧、閱讀筆記與日常記事。更早的舊文章在<a href="{esc(OLD_BLOG[1])}" rel="noopener">舊部落格 ↗</a>。</p>
+    <div class="filters" role="group" aria-label="依系列篩選" hidden>{"".join(filters)}</div>
+  </div>
+  {"".join(sections)}
+</div>'''
+    first = next((a['cover'] for a in articles if a.get('cover')), None)
+    return layout(base='../', title='部落格 · 萌芽中。',
+                  desc=f'萌芽的部落格：{len(articles)} 篇階段回顧、閱讀筆記與日常記事。',
+                  path='/blog/', body=body, current='blog', css=('cooking', 'blog'), js=('blog-filter',),
+                  og_image=f'{SITE}/assets/{first["src"]}' if first else None)
+
+
+def build_post(a, newer, older):
+    path = f'/blog/{a["slug"]}/'
+    tags = ''.join(f'<span class="chip">{esc(t)}</span>' for t in a.get('tags', []))
+    views = (f'<span class="views" data-code="{esc(GOATCOUNTER)}" hidden></span>' if GOATCOUNTER else '')
+    meta = ' · '.join(x for x in (f'<time datetime="{a["date"]}">{fmt_full(a["date"])}</time>',
+                                  f'約 {a["minutes"]} 分鐘閱讀', views) if x)
+
+    def nav(art, label, cls):
+        if not art:
+            return f'<span class="pn {cls} empty"></span>'
+        return (f'<a class="pn {cls}" href="../{art["slug"]}/"><small>{label}</small>'
+                f'<span class="serif">{esc(art["title"])}</span></a>')
+
+    body = f'''<article class="post">
+  <header class="post-head narrow">
+    <p class="eyebrow"><a href="../">部落格</a> · {esc(a["series"])}</p>
+    <h1>{esc(a["title"])}</h1>
+    <p class="post-meta">{meta}</p>
+    {f'<div class="tags">{tags}</div>' if tags else ''}
+  </header>
+  <div class="prose narrow">{resolve(a["html"], "../../")}</div>
+  <nav class="post-nav narrow" aria-label="上一篇與下一篇">{nav(newer, "較新的文章 →", "newer")}{nav(older, "← 較舊的文章", "older")}</nav>
+</article>'''
+    c = a.get('cover')
+    return layout(base='../../', title=f'{a["title"]} · 萌芽中。', desc=short(a['abstract'], 120), path=path,
+                  body=body, current='blog', css=('blog',), js=('views',) if GOATCOUNTER else (),
+                  og_image=f'{SITE}/assets/{c["src"]}' if c else None, og_type='article',
+                  extra_head=f'<meta property="article:published_time" content="{a["date"]}">')
+
+
+# ------------------------------------------------------------------ home / misc
+
+def build_home(entries, articles):
     latest = [im for e in entries for im in e['images']][:4]
     thumbs = ''.join(
         f'<img src="assets/cooking/{im["thumb"]}" width="{im["w"]}" height="{im["h"]}" alt="" loading="lazy">'
         for im in latest)
-    blog_items = ''.join(f'<li><a href="{esc(u)}" rel="noopener">{esc(t)} ↗</a></li>' for t, u in BLOGS)
+    posts = ''.join(f'<li><a href="blog/{a["slug"]}/"><time>{fmt_full(a["date"])}</time>{esc(a["title"])}</a></li>'
+                    for a in articles[:4])
     lede = ''.join(f'<span>{esc(s)}。</span>' for s in BIO.split('。') if s)
     body = f'''<div class="wrap">
   <div class="home-hero">
@@ -200,9 +304,10 @@ def build_home(entries):
       <p>煮過的東西、心得與照片（{len(entries)} 則）。</p>
       <div class="thumbs" aria-hidden="true">{thumbs}</div>
     </a>
-    <div class="card">
-      <h2 class="serif">部落格</h2>
-      <ul>{blog_items}</ul>
+    <div class="card card-blog">
+      <h2 class="serif"><a href="blog/">部落格</a></h2>
+      <ul class="latest">{posts}</ul>
+      <p class="more"><a href="blog/">全部 {len(articles)} 篇文章 →</a> <a href="{esc(OLD_BLOG[1])}" rel="noopener">{esc(OLD_BLOG[0])} ↗</a></p>
     </div>
     <a class="card" href="{GSITE}/about" rel="noopener">
       <h2 class="serif">關於 ↗</h2>
@@ -232,17 +337,42 @@ def build_about_stub():
                   current='about', css=('cooking',), extra_head=head)
 
 
-def write(rel, content):
+def build_sitemap(articles):
+    urls = [('/', None), ('/cooking/', None), ('/blog/', articles[0]['date'] if articles else None)]
+    urls += [(f'/blog/{a["slug"]}/', a['date']) for a in articles]
+    rows = ''.join(f'<url><loc>{SITE}{p}</loc>' + (f'<lastmod>{d}</lastmod>' if d else '') + '</url>' for p, d in urls)
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{rows}</urlset>\n')
+
+
+def write(rel, content, quiet=False):
     p = os.path.join(ROOT, rel)
     os.makedirs(os.path.dirname(p), exist_ok=True)
     with open(p, 'w', encoding='utf-8', newline='\n') as f:
         f.write(content)
-    print('wrote', rel, f'({len(content) // 1024} KB)')
+    if not quiet:
+        print('wrote', rel, f'({len(content) // 1024} KB)')
+
+
+def load(name, key):
+    with open(os.path.join(ROOT, 'data', name), encoding='utf-8') as f:
+        return json.load(f)[key]
 
 
 if __name__ == '__main__':
-    with open(os.path.join(ROOT, 'data', 'cooking.json'), encoding='utf-8') as f:
-        entries = json.load(f)['entries']
+    entries = load('cooking.json', 'entries')
+    articles = sorted(load('blog.json', 'articles'), key=lambda a: a['date'], reverse=True)
+
+    shutil.rmtree(os.path.join(ROOT, 'blog'), ignore_errors=True)      # drop pages of removed articles
     write('cooking/index.html', build_cooking(entries))
-    write('index.html', build_home(entries))
+    write('blog/index.html', build_blog_index(articles))
+    for i, a in enumerate(articles):
+        newer = articles[i - 1] if i > 0 else None
+        older = articles[i + 1] if i + 1 < len(articles) else None
+        write(f'blog/{a["slug"]}/index.html', build_post(a, newer, older), quiet=True)
+    print('wrote blog/<slug>/index.html x', len(articles))
+    write('index.html', build_home(entries, articles))
     write('about/index.html', build_about_stub())
+    write('sitemap.xml', build_sitemap(articles))
+    write('robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
+    print('view counts:', f'GoatCounter "{GOATCOUNTER}"' if GOATCOUNTER else 'off (GOATCOUNTER not set)')
