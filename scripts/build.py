@@ -26,8 +26,8 @@ GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh
 esc = html.escape
 
 # Comments (Cloudflare Worker in /worker). Both must be set, otherwise pages are built without a comment area.
-COMMENTS_API = os.environ.get('COMMENTS_API', '')            # e.g. https://comments.mengyahh.com
-TURNSTILE_SITEKEY = os.environ.get('TURNSTILE_SITEKEY', '')  # public site key from Cloudflare Turnstile
+COMMENTS_API = os.environ.get('COMMENTS_API', 'https://comments.mengyahh.com')   # set COMMENTS_API= (empty) to build without comments
+TURNSTILE_SITEKEY = os.environ.get('TURNSTILE_SITEKEY', '0x4AAAAAAE88bRoZ3yGytjgC')  # public site key from Cloudflare Turnstile (safe to publish)
 
 # Blog categories. An article can belong to several. The sidebar shows them in these groups, in this order;
 # categories with no article are hidden, and any category not listed here is appended to the last group.
