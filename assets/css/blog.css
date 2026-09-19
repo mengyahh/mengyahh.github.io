@@ -128,3 +128,60 @@ a.pn:hover { border-color: var(--accent); }
   .narrow { padding-left: 18px; padding-right: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .row-cover img { transition: none; } }
+
+/* comments */
+.comments { margin-top: 64px; padding-top: 8px; border-top: 1px solid var(--border-strong); }
+.comments h2 { font-size: 22px; margin: 28px 0 8px; font-weight: 700; }
+.c-note { margin: 0 0 20px; font-size: 13.5px; line-height: 1.75; color: var(--muted); }
+.c-form { display: grid; gap: 14px; margin: 0 0 8px; }
+.c-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.c-form label { display: grid; gap: 6px; font-size: 13.5px; color: var(--ink-soft); }
+.c-form input[type=text], .c-form input[type=email], .c-form textarea {
+  font: inherit; font-size: 15.5px; line-height: 1.7; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--border-strong); border-radius: 8px; padding: 10px 12px; width: 100%;
+}
+.c-form textarea { min-height: 128px; resize: vertical; }
+.c-form input:focus, .c-form textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-color: transparent; }
+.c-form .req { color: #b3402f; }
+.c-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.c-remember { display: flex !important; grid-template-columns: none; align-items: center; gap: 8px !important; font-size: 13.5px; }
+.c-remember input { width: 16px; height: 16px; accent-color: var(--accent); }
+.c-replying { margin: 0; font-size: 14px; color: var(--accent); font-weight: 700; }
+.c-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.c-actions button { font: inherit; font-size: 15px; padding: 10px 22px; border-radius: 999px; cursor: pointer; }
+.c-actions button[type=submit] { background: var(--accent); border: 1px solid var(--accent); color: var(--bg); font-weight: 700; }
+.c-actions button[type=submit]:hover:not(:disabled) { filter: brightness(1.08); }
+.c-actions button:disabled { opacity: .55; cursor: default; }
+.c-cancel { background: none; border: 1px solid var(--border-strong); color: var(--ink-soft); }
+.c-cancel:hover { border-color: var(--accent); color: var(--accent); }
+.c-turnstile { min-height: 0; }
+.c-msg { min-height: 1.5em; margin: 6px 0 0; font-size: 14px; line-height: 1.7; color: var(--ink-soft); }
+.c-msg.is-ok { color: var(--accent); }
+.c-msg.is-error { color: #b3402f; }
+
+.c-list { margin-top: 20px; }
+.c-item { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 0 14px; padding: 22px 0; border-top: 1px solid var(--border); }
+.c-item:first-child { border-top: 0; }
+.c-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; display: block; background: var(--surface); }
+.c-avatar .av-bg { fill: var(--surface); }
+.c-avatar.is-owner .av-bg { fill: var(--accent); }
+.c-avatar .av-mark { fill: var(--bg); font: 700 21px "Noto Serif TC", serif; }
+.c-avatar .av-fg { fill: var(--muted); opacity: .55; }
+.c-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-bottom: 4px; }
+.c-name { font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+.c-badge { font-size: 11.5px; line-height: 1; padding: 3px 8px; border-radius: 999px; background: var(--accent); color: var(--bg); }
+.c-time { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; letter-spacing: 0.03em; color: var(--muted); margin-left: auto; }
+.c-reply { font: inherit; font-size: 13px; padding: 0; background: none; border: 0; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.c-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.85; font-size: 16px; }
+.c-to { color: var(--muted); }
+.c-replies { margin-top: 6px; }
+.c-replies .c-item { padding: 18px 0 6px; border-top: 1px solid var(--border); }
+.c-main > .c-formwrap { margin-top: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: color-mix(in srgb, var(--surface) 60%, transparent); }
+.c-empty { color: var(--muted); margin: 8px 0; }
+
+@media (max-width: 720px) {
+  .c-row { grid-template-columns: 1fr; }
+  .c-item { grid-template-columns: 32px minmax(0, 1fr); gap: 0 10px; }
+  .c-avatar { width: 32px; height: 32px; }
+  .c-time { margin-left: 0; width: 100%; order: 3; }
+}

@@ -46,3 +46,6 @@ scripts/build.py         由 data/*.json 產生 index.html、cooking/、blog/、
 ## 新增一篇部落格文章
 
 在 `data/blog.json` 的 `articles` 加一筆（欄位照現有的：`slug`、`title`、`date`、`categories`（例如 `["心得","日常"]`，可多個）、`abstract`、`html`，可選 `tags`、`cover`），圖片放 `assets/blog/<slug>/`，內文裡用 `@ASSET/blog/<slug>/01.webp` 引用，站內連結用 `@BLOG/<slug>/`，再執行 `python scripts/build.py`。
+
+## 留言功能
+部落格文章底下的留言區由 `worker/`（Cloudflare Worker + D1）提供，部署步驟見 [worker/README.md](worker/README.md)。`scripts/build.py` 的 `COMMENTS_API` 與 `TURNSTILE_SITEKEY` 兩個都設定時才會出現留言區；沒設定時網站完全不載入任何留言相關程式。

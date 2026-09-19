@@ -25,6 +25,10 @@ INSTAGRAM = 'https://www.instagram.com/mengyahh'
 GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh.goatcounter.com (set GOATCOUNTER= to build without tracking)
 esc = html.escape
 
+# Comments (Cloudflare Worker in /worker). Both must be set, otherwise pages are built without a comment area.
+COMMENTS_API = os.environ.get('COMMENTS_API', '')            # e.g. https://comments.mengyahh.com
+TURNSTILE_SITEKEY = os.environ.get('TURNSTILE_SITEKEY', '')  # public site key from Cloudflare Turnstile
+
 # Blog categories (an article can belong to several). Unlisted ones are appended after these.
 CATEGORY_ORDER = ['心得', '日常', '創作', '其他']
 
@@ -311,6 +315,32 @@ def build_blog_index(articles):
                   og_image=f'{SITE}/assets/{first["src"]}' if first else None)
 
 
+def comments_section(a):
+    if not (COMMENTS_API and TURNSTILE_SITEKEY):
+        return ''
+    return f'''<section class="comments narrow" id="comments" data-api="{esc(COMMENTS_API)}" data-page="/blog/{a["slug"]}/" data-sitekey="{esc(TURNSTILE_SITEKEY)}">
+  <h2 class="serif">留言</h2>
+  <p class="c-note">電子郵件不會公開，只用來辨識留言者。第一次留言會先經過審核，之後同一個電子郵件的留言會直接顯示。本留言區以 Cloudflare Turnstile 防止垃圾留言。</p>
+  <div class="c-formwrap">
+    <form class="c-form" novalidate hidden>
+      <p class="c-replying" hidden></p>
+      <div class="c-row">
+        <label>名稱<input type="text" name="name" maxlength="40" autocomplete="nickname" placeholder="匿名訪客"></label>
+        <label>電子郵件<input type="email" name="email" maxlength="254" autocomplete="email" placeholder="選填，不會公開"></label>
+      </div>
+      <label><span>留言 <span class="req" aria-hidden="true">*</span></span><textarea name="body" required maxlength="2000" rows="5"></textarea></label>
+      <input class="c-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="c-turnstile"></div>
+      <label class="c-remember"><input type="checkbox" name="remember"> 在這個瀏覽器記住我的名稱和電子郵件，下次留言時使用</label>
+      <div class="c-actions"><button type="submit">發佈留言</button><button type="button" class="c-cancel" hidden>取消回覆</button></div>
+    </form>
+  </div>
+  <p class="c-msg" role="status" aria-live="polite"></p>
+  <div class="c-list" aria-live="polite"></div>
+  <noscript><p class="c-note">留言功能需要開啟 JavaScript。</p></noscript>
+</section>'''
+
+
 def build_post(a, newer, older):
     path = f'/blog/{a["slug"]}/'
     tags = (''.join(f'<a class="chip" href="../?cat={quote(c)}">{esc(c)}</a>' for c in a['categories'])
@@ -333,10 +363,12 @@ def build_post(a, newer, older):
   </header>
   <div class="prose narrow">{resolve(a["html"], "../../")}</div>
   <nav class="post-nav narrow" aria-label="上一篇與下一篇">{nav(newer, "較新的文章 →", "newer")}{nav(older, "← 較舊的文章", "older")}</nav>
+  {comments_section(a)}
 </article>'''
     c = a.get('cover')
     return layout(base='../../', title=f'{a["title"]} · 萌芽中。', desc=short(a['abstract'], 120), path=path,
-                  body=body, current='blog', css=('blog',), js=('views',) if GOATCOUNTER else (),
+                  body=body, current='blog', css=('blog',),
+                  js=(('views',) if GOATCOUNTER else ()) + (('comments',) if COMMENTS_API and TURNSTILE_SITEKEY else ()),
                   og_image=f'{SITE}/assets/{c["src"]}' if c else None, og_type='article',
                   extra_head=f'<meta property="article:published_time" content="{a["date"]}">')
 
@@ -435,4 +467,5 @@ if __name__ == '__main__':
     write('assets/data/blog-search.json', build_search_index(articles))
     write('sitemap.xml', build_sitemap(articles))
     write('robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
+    print('comments:', COMMENTS_API if COMMENTS_API and TURNSTILE_SITEKEY else 'off (COMMENTS_API / TURNSTILE_SITEKEY not set)')
     print('view counts:', f'GoatCounter "{GOATCOUNTER}"' if GOATCOUNTER else 'off (GOATCOUNTER not set)')

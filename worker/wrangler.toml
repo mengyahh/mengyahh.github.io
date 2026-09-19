@@ -1,0 +1,19 @@
+# Only needed if you deploy from the command line (npm i -g wrangler; wrangler login; wrangler deploy).
+# Deploying through the Cloudflare dashboard does not use this file — see README.md.
+name = "mengyahh-comments"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+ALLOWED_ORIGINS = "https://mengyahh.com"
+OWNER_NAME = "萌芽"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mengyahh-comments"
+database_id = "<fill in after creating the database>"
+
+# Secrets are NOT stored here. Set them with:
+#   wrangler secret put TURNSTILE_SECRET
+#   wrangler secret put ADMIN_TOKEN
+#   wrangler secret put PEPPER
