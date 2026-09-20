@@ -14,7 +14,7 @@ import struct
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 esc = lambda s: html.escape(s, quote=False)
-IMG_LINE = re.compile(r'^!\[([^\]]*)\]\(([^)\s]+)\)$')
+IMG_LINE = re.compile(r'^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)$')      # ![alt](file.webp "caption")
 
 
 # ------------------------------------------------------------------ reading files
@@ -109,6 +109,8 @@ def sync_filenames():
 
 def inline(s, titles):
     s = esc(s)
+    for tag in ('sub', 'sup', 'br'):                       # a few HTML tags may be written directly
+        s = s.replace(f'&lt;{tag}&gt;', f'<{tag}>').replace(f'&lt;/{tag}&gt;', f'</{tag}>')
     # 〈another article's title〉 becomes a link to it; the part before "：" is enough
     s = re.sub(r'〈([^〉]+)〉', lambda m: (f'<a href="@BLOG/{titles[m.group(1)]}/">〈{m.group(1)}〉</a>'
                                         if m.group(1) in titles else m.group(0)), s)
@@ -125,7 +127,13 @@ def chunks(body):
     if m:
         kw_lines = [l.strip() for l in m.group(1).strip().split('\n') if l.strip()]
         body = body[:m.start()]
-    body = re.sub(r'\n*(!\[[^\]]*\]\([^)\s]+\))[ \t]*\n*', r'\n\n\1\n\n', body)           # a photo is its own block
+    galleries = []
+
+    def take_gallery(m):
+        galleries.append(m.group(0))
+        return f'\n\n@@GALLERY{len(galleries) - 1}@@\n\n'
+    body = re.sub(r'^:::gallery[^\n]*\n.*?\n:::[ \t]*$', take_gallery, body, flags=re.M | re.S)     # :::gallery ... :::
+    body = re.sub(r'\n*(!\[[^\]]*\]\([^)"]*(?:"[^"]*")?\))[ \t]*\n*', r'\n\n\1\n\n', body)      # a photo is its own block
     body = re.sub(r'^(#{2,4} .+)\n(?=\S)', r'\1\n\n', body, flags=re.M)                     # heading, then text
     out = []
     for raw in re.split(r'\n\s*\n', body.strip()):
@@ -133,6 +141,10 @@ def chunks(body):
         if not lines:
             continue
         raw = '\n'.join(lines)
+        g = re.fullmatch(r'@@GALLERY(\d+)@@', raw)
+        if g:
+            out.append(('gallery', galleries[int(g.group(1))]))
+            continue
         if IMG_LINE.match(raw):
             kind = 'img'
         elif re.match(r'^#{2,4} ', raw):
@@ -166,10 +178,41 @@ def render_block(kind, raw, titles, after_memo=False):
         lis = ''.join(f'<li>{inline(l[2:].strip(), titles)}</li>' for l in lines)
         return f'<ul class="memo">{lis}</ul>' if after_memo else f'<ul>{lis}</ul>'
     if kind == 'ol':
-        return '<ol>' + ''.join(f'<li>{inline(re.sub(r"^\d+[.)] ", "", l), titles)}</li>' for l in lines) + '</ol>'
+        start = re.match(r'\d+', lines[0]).group(0)
+        open_tag = '<ol>' if start == '1' else f'<ol start="{start}">'
+        return open_tag + ''.join(f'<li>{inline(re.sub(r"^\d+[.)] ", "", l), titles)}</li>' for l in lines) + '</ol>'
     if kind == 'quote':
         return '<blockquote><p>' + inline('\n'.join(l.lstrip('>').strip() for l in lines), titles) + '</p></blockquote>'
     return f'<p>{inline(raw, titles)}</p>'
+
+
+def render_gallery(raw, gid, folder, imgdir, name, default_alt):
+    """:::gallery [caption] + photo lines + ::: -> a grid of thumbnails that opens in the lightbox."""
+    lines = raw.split('\n')
+    title = lines[0][len(':::gallery'):].strip()
+    items = []
+    for line in lines[1:-1]:
+        line = line.strip()
+        if not line:
+            continue
+        m = IMG_LINE.match(line)
+        if not m:
+            raise SystemExit(f'{name}: inside :::gallery only photo lines like ![](01.webp) are allowed (got "{line[:30]}")')
+        alt, fn, cap = m.groups()
+        caption = cap or alt
+        if not os.path.isfile(os.path.join(imgdir, fn)):
+            raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{folder}/')
+        thumb = re.sub(r'\.(\w+)$', r'-t.\1', fn)
+        if not os.path.isfile(os.path.join(imgdir, thumb)):
+            thumb = fn                                        # no -t thumbnail: use the photo itself
+        w, h = image_size(os.path.join(imgdir, thumb))
+        items.append(f'<a class="ph" href="@ASSET/blog/{folder}/{fn}" data-group="{gid}" data-title="{html.escape(caption)}" '
+                     f'data-alt="{html.escape(caption or default_alt)}"><img src="@ASSET/blog/{folder}/{thumb}" width="{w}" height="{h}" '
+                     f'alt="{html.escape(caption or default_alt)}" loading="lazy" decoding="async"></a>')
+    if not items:
+        raise SystemExit(f'{name}: an empty :::gallery')
+    cap = f'<figcaption><span class="cap">{esc(title)}</span></figcaption>' if title else ''
+    return f'<figure class="gallery-fig"><div class="gallery">{"".join(items)}</div>{cap}</figure>'
 
 
 def title_map(json_articles, md_metas):
@@ -205,19 +248,23 @@ def blog_articles(json_articles):
         folder = meta.get('photos') or slug             # photo folder in assets/blog/ (stays put when the date is changed)
         imgdir = os.path.join(ROOT, 'assets', 'blog', folder)
         blocks, kw_lines = chunks(body)
-        parts, n, first = [], 0, None
+        parts, n, first, galleries = [], 0, None, 0
         after_memo = False
         for kind, raw in blocks:
             if kind == 'img':
-                alt, fn = IMG_LINE.match(raw).groups()
+                alt, fn, cap = IMG_LINE.match(raw).groups()
                 if not os.path.isfile(os.path.join(imgdir, fn)):
                     raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{folder}/')
                 w, h = image_size(os.path.join(imgdir, fn))
                 n += 1
                 first = first or fn
-                alt = alt or f'{meta["title"]}（照片 {n}）'
+                alt = alt or cap or f'{meta["title"]}（照片 {n}）'
+                figcap = f'<figcaption><span class="cap">{html.escape(cap, quote=False)}</span></figcaption>' if cap else ''
                 parts.append(f'<figure><img src="@ASSET/blog/{folder}/{fn}" width="{w}" height="{h}" '
-                             f'alt="{html.escape(alt)}" loading="lazy" decoding="async"></figure>')
+                             f'alt="{html.escape(alt)}" loading="lazy" decoding="async">{figcap}</figure>')
+            elif kind == 'gallery':
+                galleries += 1
+                parts.append(render_gallery(raw, f'{slug}-g{galleries}', folder, imgdir, name, meta['title']))
             else:
                 parts.append(render_block(kind, raw, titles, after_memo=(kind == 'ul' and after_memo)))
             after_memo = kind == 'memo'
@@ -258,7 +305,7 @@ def cooking_entries():
         out_blocks, images = [], []
         for kind, raw in blocks:
             if kind == 'img':
-                cap, fn = IMG_LINE.match(raw).groups()
+                cap, fn, _title = IMG_LINE.match(raw).groups()
                 p = os.path.join(ROOT, 'assets', 'cooking', fn)
                 if not os.path.isfile(p):
                     raise SystemExit(f'{name}: photo "{fn}" not found in assets/cooking/')

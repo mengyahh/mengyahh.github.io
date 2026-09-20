@@ -401,8 +401,8 @@ def build_post(a, newer, older):
 </article>'''
     c = a.get('cover')
     return layout(base='../../', title=f'{a["title"]} · 萌芽中。', desc=short(a['abstract'], 120), path=path,
-                  body=body, current='blog', css=('blog',),
-                  js=(('views',) if GOATCOUNTER else ()) + (('comments',) if COMMENTS_API and TURNSTILE_SITEKEY else ()),
+                  body=body, current='blog', css=('blog',) + (('lightbox',) if 'class="gallery"' in a['html'] else ()),
+                  js=(('lightbox',) if 'class="gallery"' in a['html'] else ()) + (('views',) if GOATCOUNTER else ()) + (('comments',) if COMMENTS_API and TURNSTILE_SITEKEY else ()),
                   og_image=f'{SITE}/assets/{c["src"]}' if c else None, og_type='article',
                   extra_head=f'<meta property="article:published_time" content="{a["date"]}">')
 
