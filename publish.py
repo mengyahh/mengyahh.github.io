@@ -4,8 +4,12 @@
     python publish.py                    (or double-click publish.bat)
     python publish.py "message"          (commit message)
 """
+import os
 import subprocess
 import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scripts'))
+import mdcontent
 
 msg = sys.argv[1] if len(sys.argv) > 1 else 'Update content'
 
@@ -17,6 +21,8 @@ def run(*cmd, check=True):
     return r.stdout.strip()
 
 
+for old, new in mdcontent.sync_filenames():
+    print(f'Renamed to match its date: {old}  ->  {new}')
 run(sys.executable, 'scripts/build.py')
 print('Built.')
 status = run('git', 'status', '--short')

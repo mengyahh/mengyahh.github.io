@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 r"""Add photos to an article or a cooking note: resize, convert to WebP, strip EXIF/GPS, print the Markdown lines to paste.
 
-    python scripts/photo.py blog 2025-09-29 D:\pics\a.jpg D:\pics\b.jpg
+    python scripts/photo.py blog content/blog/2025-09-29_小豆島.md D:\pics\a.jpg D:\pics\b.jpg
     python scripts/photo.py cooking 202601-a D:\pics\a.jpg
 
-blog    -> assets/blog/<date>/NN.webp (numbering continues after the existing photos; cover.webp is made if missing)
+blog    -> the article's photo folder (photos: or date in the front matter) assets/blog/<folder>/NN.webp; give its .md file. Numbering continues; cover.webp is made if missing
 cooking -> assets/cooking/<name>-N.webp + <name>-N-t.webp (<name> is any label, e.g. 202601-a; numbering continues)
 Needs Pillow:  pip install pillow
 """
@@ -38,8 +38,14 @@ def main():
     kind, name, files = sys.argv[1], sys.argv[2], sys.argv[3:]
     lines = []
     if kind == 'blog':
-        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', name):
-            sys.exit('For a blog article give its date, e.g. 2025-09-29')
+        if name.lower().endswith('.md'):                       # the article's .md file: use its `photos:` folder, else its date
+            meta = {}
+            with open(name, encoding='utf-8') as fh:
+                front = fh.read().replace('\r\n', '\n').split('---')[1]
+            for line in front.split('\n'):
+                k, _, v = line.partition(':')
+                meta[k.strip()] = v.strip()
+            name = meta.get('photos') or meta.get('date') or sys.exit('No date in the front matter')
         folder = os.path.join(ROOT, 'assets', 'blog', name)
         os.makedirs(folder, exist_ok=True)
         n = next_no(folder, r'(\d\d)\.webp')

@@ -561,6 +561,8 @@ if __name__ == '__main__':
     # data/*.json holds the migrated Google Sites / Vocus / Strikingly content; content/**/*.md holds what is written from now on
     entries = mdcontent.merge_cooking(load('cooking.json', 'entries'), mdcontent.cooking_entries())
     json_articles = load('blog.json', 'articles')
+    for old, new in mdcontent.filename_mismatches():
+        print(f'note: {os.path.basename(old)} has a different date than its file name (publish.py renames it to {os.path.basename(new)})')
     articles = sorted(json_articles + mdcontent.blog_articles(json_articles), key=lambda a: a['date'], reverse=True)
 
     shutil.rmtree(os.path.join(ROOT, 'blog'), ignore_errors=True)      # drop pages of removed articles

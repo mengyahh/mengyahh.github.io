@@ -83,6 +83,28 @@ def image_size(path):
     raise ValueError(f'cannot read the size of {path}')
 
 
+def filename_mismatches():
+    """[(old name, new name)] for content files whose leading date differs from the date in their front matter."""
+    out = []
+    for sub in ('blog', 'cooking'):
+        for meta, _, path in read_dir(sub):
+            d, name = meta.get('date', ''), os.path.basename(path)
+            m = re.match(r'^(\d{4}-\d{2}(?:-\d{2})?)_(.*)$', name)
+            if m and re.fullmatch(r'\d{4}-\d{2}(-\d{2})?', d) and m.group(1) != d:
+                out.append((path, os.path.join(os.path.dirname(path), f'{d}_{m.group(2)}')))
+    return out
+
+
+def sync_filenames():
+    """Rename those files so the date in the file name matches the front matter. Returns [(old, new)] names."""
+    done = []
+    for old, new in filename_mismatches():
+        if not os.path.exists(new):
+            os.rename(old, new)
+            done.append((os.path.basename(old), os.path.basename(new)))
+    return done
+
+
 # ------------------------------------------------------------------ Markdown -> HTML
 
 def inline(s, titles):
@@ -180,7 +202,8 @@ def blog_articles(json_articles):
         for k in ('title', 'categories'):
             if not meta.get(k):
                 raise SystemExit(f'{name}: front matter needs "{k}"')
-        imgdir = os.path.join(ROOT, 'assets', 'blog', slug)
+        folder = meta.get('photos') or slug             # photo folder in assets/blog/ (stays put when the date is changed)
+        imgdir = os.path.join(ROOT, 'assets', 'blog', folder)
         blocks, kw_lines = chunks(body)
         parts, n, first = [], 0, None
         after_memo = False
@@ -188,12 +211,12 @@ def blog_articles(json_articles):
             if kind == 'img':
                 alt, fn = IMG_LINE.match(raw).groups()
                 if not os.path.isfile(os.path.join(imgdir, fn)):
-                    raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{slug}/')
+                    raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{folder}/')
                 w, h = image_size(os.path.join(imgdir, fn))
                 n += 1
                 first = first or fn
                 alt = alt or f'{meta["title"]}（照片 {n}）'
-                parts.append(f'<figure><img src="@ASSET/blog/{slug}/{fn}" width="{w}" height="{h}" '
+                parts.append(f'<figure><img src="@ASSET/blog/{folder}/{fn}" width="{w}" height="{h}" '
                              f'alt="{html.escape(alt)}" loading="lazy" decoding="async"></figure>')
             else:
                 parts.append(render_block(kind, raw, titles, after_memo=(kind == 'ul' and after_memo)))
@@ -202,9 +225,9 @@ def blog_articles(json_articles):
         cover_fn = meta.get('cover') or ('cover.webp' if os.path.isfile(os.path.join(imgdir, 'cover.webp')) else first)
         if cover_fn:
             if not os.path.isfile(os.path.join(imgdir, cover_fn)):
-                raise SystemExit(f'{name}: cover "{cover_fn}" not found in assets/blog/{slug}/')
+                raise SystemExit(f'{name}: cover "{cover_fn}" not found in assets/blog/{folder}/')
             w, h = image_size(os.path.join(imgdir, cover_fn))
-            cover = {'src': f'blog/{slug}/{cover_fn}', 'w': w, 'h': h}
+            cover = {'src': f'blog/{folder}/{cover_fn}', 'w': w, 'h': h}
         art = {'slug': slug, 'source': 'markdown', 'title': meta['title'], 'date': slug,
                'categories': as_list(meta['categories']), 'tags': [], 'abstract': meta.get('summary', ''),
                'keywords': as_list(meta.get('keywords')), 'kwlines': kw_lines, 'cover': cover, 'html': ''.join(parts)}
