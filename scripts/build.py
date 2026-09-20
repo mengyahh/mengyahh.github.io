@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the static pages from data/*.json.
+"""Render the static pages from data/*.json and content/**/*.md.
 
     python scripts/build.py
 
@@ -15,6 +15,8 @@ import re
 import shutil
 from urllib.parse import quote
 from collections import OrderedDict
+
+import mdcontent
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://mengyahh.com'
@@ -556,8 +558,10 @@ def load(name, key):
 
 
 if __name__ == '__main__':
-    entries = load('cooking.json', 'entries')
-    articles = sorted(load('blog.json', 'articles'), key=lambda a: a['date'], reverse=True)
+    # data/*.json holds the migrated Google Sites / Vocus / Strikingly content; content/**/*.md holds what is written from now on
+    entries = mdcontent.merge_cooking(load('cooking.json', 'entries'), mdcontent.cooking_entries())
+    json_articles = load('blog.json', 'articles')
+    articles = sorted(json_articles + mdcontent.blog_articles(json_articles), key=lambda a: a['date'], reverse=True)
 
     shutil.rmtree(os.path.join(ROOT, 'blog'), ignore_errors=True)      # drop pages of removed articles
     write('cooking/index.html', build_cooking(entries))

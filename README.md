@@ -12,28 +12,33 @@
 ## 結構
 
 ```
-data/cooking.json        料理紀錄的內容來源（每則：日期、標題、文字、照片）
+content/blog/            新的部落格文章（一篇一個 Markdown 檔）
+content/cooking/         新的料理紀錄（一則一個 Markdown 檔）；寫法見 content/README.md
+data/cooking.json        舊的料理紀錄（Google Site 搬來的：日期、標題、文字、照片）
 data/about.json          關於頁內容（分區、標籤、個人資料）
 data/portfolio.json      作品集內容（分組、項目、圖片；影片只存 YouTube 代碼，頁面以本機封面圖顯示，按播放才載入）
-data/blog.json           部落格文章（標題、日期、系列、內文 HTML）
+data/blog.json           舊的部落格文章（Vocus、Strikingly 搬來的：標題、日期、分類、內文 HTML）
 assets/blog/<日期>/      文章圖片（WebP，已去除 EXIF）
 assets/data/blog-search.json  站內搜尋用的索引（產生檔）
 assets/cooking/          照片（xxx.webp 大圖 1280px、xxx-t.webp 縮圖 640px，已去除 EXIF）
 assets/css, assets/js    樣式、輪播與燈箱
-scripts/build.py         由 data/*.json 產生 index.html、about/、portfolio/、cooking/、blog/、sitemap.xml、robots.txt
+scripts/mdcontent.py     讀 content/ 的 Markdown
+scripts/photo.py         縮圖、轉 WebP、去 EXIF，並印出要貼進 .md 的照片行
+scripts/preview.py       本機預覽（存檔自動重建）；preview.bat 是雙擊版
+publish.py               建置、commit、push 到線上；publish.bat 是雙擊版
+scripts/build.py         由 data/*.json 與 content/**/*.md 產生 index.html、about/、portfolio/、cooking/、blog/、sitemap.xml、robots.txt
 ```
 
 `index.html`、`about/`、`portfolio/`、`cooking/`、`blog/`、`sitemap.xml` 是**產生出來的檔案**，不要直接改，改 `scripts/build.py` 或 `data/*.json` 後重跑。
 
-## 新增一則料理紀錄
+## 新增文章／料理紀錄（Markdown）
 
-1. 照片放進 `assets/cooking/`，命名 `YYYYMM-N-序號.webp`（大圖）與 `YYYYMM-N-序號-t.webp`（縮圖）
-2. 在 `data/cooking.json` 的 `entries` **最前面**加一筆（格式照現有的）
-3. 執行 `python scripts/build.py`
-4. 本機預覽：`python -m http.server 8000` → http://localhost:8000
-5. `git add -A && git commit && git push`
+在 `content/blog/` 或 `content/cooking/` 新增 `.md` 檔（複製 `content/_範本.md`），格式與加照片的方法見 [content/README.md](content/README.md)。
+存檔 → 雙擊 `preview.bat` 預覽 → 雙擊 `publish.bat` 上線。
 
-只需要 Python 3，沒有任何套件相依。
+只需要 Python 3 就能建置與預覽；`scripts/photo.py` 另外需要 Pillow（`pip install pillow`）。
+
+舊內容（`data/*.json`）仍可照舊直接編輯：料理紀錄在 `entries` 最前面加一筆、照片放 `assets/cooking/`；部落格文章加在 `articles`（欄位：`slug`、`title`、`date`、`categories`、`abstract`、`html`，可選 `tags`、`cover`），內文裡用 `@ASSET/blog/<slug>/01.webp` 引用圖片、`@BLOG/<slug>/` 連到站內文章。
 
 ## 瀏覽次數（GoatCounter）
 
@@ -44,10 +49,6 @@ scripts/build.py         由 data/*.json 產生 index.html、about/、portfolio/
 3. 把 `scripts/build.py` 裡的 `GOATCOUNTER = os.environ.get('GOATCOUNTER', '')` 的預設值改成你的代碼，重新執行 `python scripts/build.py`
 
 目前站點代碼是 `mengyahh`。想暫時關掉追蹤（例如本機測試）：`GOATCOUNTER= python scripts/build.py`（代碼留空時網站完全不載入任何追蹤程式）。
-
-## 新增一篇部落格文章
-
-在 `data/blog.json` 的 `articles` 加一筆（欄位照現有的：`slug`、`title`、`date`、`categories`（例如 `["心得","日常"]`，可多個）、`abstract`、`html`，可選 `tags`、`cover`），圖片放 `assets/blog/<slug>/`，內文裡用 `@ASSET/blog/<slug>/01.webp` 引用，站內連結用 `@BLOG/<slug>/`，再執行 `python scripts/build.py`。
 
 ## 留言功能
 部落格文章底下的留言區由 `worker/`（Cloudflare Worker + D1）提供，部署步驟見 [worker/README.md](worker/README.md)。`scripts/build.py` 的 `COMMENTS_API` 與 `TURNSTILE_SITEKEY` 兩個都設定時才會出現留言區；沒設定時網站完全不載入任何留言相關程式。
