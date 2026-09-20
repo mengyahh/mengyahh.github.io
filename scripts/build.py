@@ -23,7 +23,9 @@ SITE = 'https://mengyahh.com'
 BIO = '思想的巨人，行為的侏儒。努力探尋前進目標，想過上自由的生活。'
 EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
-WORK_URL = 'https://understory.mengyahh.com'      # "工作" in the top navigation opens the Understory site
+WORK_URL = 'https://understory.mengyahh.com'      # the Understory site
+# The "工作" drop-down in the navigation (and the 工作 section on the home page): (label, address). No address = 「準備中」.
+WORK_MENU = [('AppSheet 系統製作', WORK_URL), ('文化工作', None), ('生態工作', None)]
 GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh.goatcounter.com (set GOATCOUNTER= to build without tracking)
 esc = html.escape
 
@@ -55,20 +57,25 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
     """Shared page shell. `base` is the relative prefix back to the site root ('', '../' or '../../')."""
     nav = [
         ('關於', f'{base}about/', 'about'),
-        ('工作', WORK_URL, 'work'),
+        ('工作', None, 'work'),                                   # drop-down
         ('料理紀錄', f'{base}cooking/', 'cooking'),
         ('部落格', f'{base}blog/', 'blog'),
     ]
     items = []
     for label, href, key in nav:
-        ext = href.startswith('http')
+        if href is None:
+            subs = ''.join(
+                (f'<li><a href="{esc(u)}" rel="noopener">{esc(t)} ↗</a></li>' if u else
+                 f'<li><span class="soon">{esc(t)}<em>準備中</em></span></li>') for t, u in WORK_MENU)
+            items.append(f'<li class="has-sub"><button type="button" class="sub-btn" aria-expanded="false" '
+                         f'aria-haspopup="true" aria-controls="sub-work">{label}<span class="caret" aria-hidden="true">▾</span></button>'
+                         f'<ul class="sub" id="sub-work">{subs}</ul></li>')
+            continue
         cur = ' aria-current="page"' if key == current else ''
-        rel = ' rel="noopener"' if ext else ''
-        arrow = ' ↗' if ext else ''
-        items.append(f'<li><a href="{esc(href)}"{cur}{rel}>{label}{arrow}</a></li>')
+        items.append(f'<li><a href="{esc(href)}"{cur}>{label}</a></li>')
     og = f'<meta property="og:image" content="{esc(og_image)}">' if og_image else ''
     styles = ''.join(f'<link rel="stylesheet" href="{base}assets/css/{c}.css">' for c in ('site',) + tuple(css))
-    scripts = ''.join(f'<script src="{base}assets/js/{j}.js" defer></script>' for j in js)
+    scripts = ''.join(f'<script src="{base}assets/js/{j}.js" defer></script>' for j in ('nav',) + tuple(js))
     analytics = ''
     stats_note = ''
     if GOATCOUNTER:
@@ -107,7 +114,6 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
 </main>
 <footer>
   <div class="wrap">
-    <p class="bio">{esc(BIO)}</p>
     <p>可能想聯絡的時候：<a href="mailto:{EMAIL}">{EMAIL}</a></p>
     <div class="links">
       <a href="{INSTAGRAM}" rel="noopener">Instagram ↗</a>
@@ -406,36 +412,39 @@ def build_post(a, newer, older):
 def build_home(entries, articles):
     latest = [im for e in entries for im in e['images']][:4]
     thumbs = ''.join(
-        f'<img src="assets/cooking/{im["thumb"]}" width="{im["w"]}" height="{im["h"]}" alt="" loading="lazy">'
+        f'<a href="cooking/"><img src="assets/cooking/{im["thumb"]}" width="{im["w"]}" height="{im["h"]}" alt="" loading="lazy"></a>'
         for im in latest)
     posts = ''.join(f'<li><a href="blog/{a["slug"]}/"><time>{date_disp(a)}</time>{esc(a["title"])}</a></li>'
-                    for a in articles[:4])
+                    for a in articles[:5])
     lede = ''.join(f'<span>{esc(s)}。</span>' for s in BIO.split('。') if s)
+    work = ''.join(
+        (f'<li><a href="{esc(u)}" rel="noopener">{esc(t)} ↗</a></li>' if u else
+         f'<li><span class="soon">{esc(t)}<em>準備中</em></span></li>') for t, u in WORK_MENU)
     body = f'''<div class="wrap">
   <div class="home-hero">
     <p class="eyebrow">mengyahh.com</p>
     <h1 class="serif">萌芽中<span>。</span></h1>
     <p class="lede">{lede}</p>
   </div>
-  <div class="cards">
-    <a class="card card-cooking" href="cooking/">
-      <h2 class="serif">料理紀錄</h2>
-      <p>煮過的東西、心得與照片。</p>
-      <div class="thumbs" aria-hidden="true">{thumbs}</div>
-    </a>
-    <div class="card card-blog">
-      <h2 class="serif"><a href="blog/">部落格</a></h2>
-      <ul class="latest">{posts}</ul>
-      <p class="more"><a href="blog/">所有文章 →</a></p>
-    </div>
-    <a class="card" href="about/">
-      <h2 class="serif">關於</h2>
-      <p>自我介紹與經歷。</p>
-    </a>
-    <a class="card" href="{WORK_URL}" rel="noopener">
-      <h2 class="serif">工作 ↗</h2>
-      <p>Understory：作品與接案品牌，給自由工作者的生活工作管理大師、白肉雞飼養紀錄。</p>
-    </a>
+  <section class="home-sec">
+    <div class="sec-head"><h2 class="serif"><a href="cooking/">料理紀錄</a></h2><a class="sec-more" href="cooking/">全部 →</a></div>
+    <p class="sec-desc">煮過的東西、心得與照片。</p>
+    <div class="thumbs">{thumbs}</div>
+  </section>
+  <section class="home-sec">
+    <div class="sec-head"><h2 class="serif"><a href="blog/">部落格</a></h2><a class="sec-more" href="blog/">所有文章 →</a></div>
+    <ul class="latest">{posts}</ul>
+  </section>
+  <div class="home-duo">
+    <section class="home-sec">
+      <div class="sec-head"><h2 class="serif"><a href="about/">關於</a></h2><a class="sec-more" href="about/">看更多 →</a></div>
+      <p class="sec-desc">自我介紹與經歷。</p>
+    </section>
+    <section class="home-sec">
+      <div class="sec-head"><h2 class="serif">工作</h2></div>
+      <p class="sec-desc">Understory：作品與接案品牌。</p>
+      <ul class="work-list">{work}</ul>
+    </section>
   </div>
 </div>'''
     return layout(base='', title='萌芽中。 · mengyahh', desc=BIO, path='/', body=body, current=None,
