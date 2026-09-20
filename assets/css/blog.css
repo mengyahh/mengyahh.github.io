@@ -97,6 +97,10 @@ mark { background: var(--accent-soft); color: inherit; border-radius: 3px; paddi
 .prose hr::after { content: "· · ·"; letter-spacing: 0.6em; color: var(--muted); }
 .prose sub { font-size: 0.7em; }
 .prose .media-link { text-align: left; }
+.prose .memo-label { margin: 1.6em 0 0.4em; font-size: 14px; letter-spacing: 0.12em; font-weight: 700; color: var(--accent); text-align: left; }
+.prose .memo-label + ul.memo { margin-top: 0; padding: 14px 20px 14px 2.2em; font-size: 15.5px; line-height: 1.85; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+.prose ul.memo li { margin-bottom: 0.3em; text-align: left; }
+.prose ul.memo li:last-child { margin-bottom: 0; }
 .prose figure { margin: 2em 0; }
 .prose figure img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); }
 .prose figcaption { margin-top: 10px; text-align: center; font-size: 13.5px; line-height: 1.7; color: var(--muted); }
@@ -206,3 +210,7 @@ a.pn:hover { border-color: var(--accent); }
 .c-item.is-target { animation: c-flash 2.4s ease-out; }
 @keyframes c-flash { 0%, 40% { background: var(--accent-soft); } 100% { background: transparent; } }
 @media (prefers-reduced-motion: reduce) { .c-item.is-target { animation: none; background: var(--accent-soft); } }
+
+.post-kw { margin-top: 2.2em; padding-top: 18px; border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13.5px; color: var(--muted); }
+.post-kw span { margin-right: 4px; font-family: "IBM Plex Mono", ui-monospace, monospace; letter-spacing: 0.06em; }
+.post-kw em { font-style: normal; padding: 2px 10px; border-radius: 20px; background: var(--chip-bg, var(--surface)); border: 1px solid var(--border); color: var(--ink-soft); }

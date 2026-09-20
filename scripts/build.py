@@ -220,6 +220,11 @@ def fmt_full(d):
     return d.replace('-', '.')
 
 
+def date_disp(a):
+    """Shown date; month-only sources (Instagram) carry a date_label such as "2025.11" next to their address date."""
+    return a.get('date_label') or fmt_full(a['date'])
+
+
 def plain_text(h):
     """HTML fragment -> single-line plain text (used for the search index)."""
     t = re.sub(r'</?(p|br|li|h[1-6]|figcaption|blockquote)\b[^>]*>', ' ', h)
@@ -228,7 +233,8 @@ def plain_text(h):
 
 
 def build_search_index(articles):
-    return json.dumps([{'slug': a['slug'], 'title': a['title'], 'cats': a['categories'], 'tags': a.get('tags', []),
+    return json.dumps([{'slug': a['slug'], 'title': a['title'], 'cats': a['categories'],
+                        'tags': a.get('tags', []) + a.get('keywords', []) + a.get('kwlines', []),
                         'abstract': a['abstract'], 'text': plain_text(a['html'])} for a in articles],
                       ensure_ascii=False, separators=(',', ':'))
 
@@ -265,7 +271,7 @@ def build_blog_index(articles):
             chips = ''.join(f'<span class="chip">{esc(c)}</span>' for c in cats_sorted)
             rows.append(
                 f'<li class="post-row" data-slug="{a["slug"]}" data-cats="{esc("|".join(cats_sorted))}"><a href="{a["slug"]}/">'
-                f'<div class="row-text"><p class="row-meta"><time datetime="{a["date"]}">{fmt_full(a["date"])}</time>'
+                f'<div class="row-text"><p class="row-meta"><time datetime="{a["date"]}">{date_disp(a)}</time>'
                 f'{chips}</p>'
                 f'<h3>{esc(a["title"])}</h3><p class="row-abs">{esc(short(a["abstract"], 120))}</p></div>{cover}</a></li>')
         sections.append(f'<section class="year" id="y{y}" data-year="{y}"><h2 class="serif">{y}</h2>'
@@ -350,12 +356,19 @@ def comments_section(a):
 </section>'''
 
 
+def keywords_html(a):
+    kws = a.get('keywords')
+    if not kws:
+        return ''
+    return f'<p class="post-kw narrow"><span>關鍵字</span>{"".join(f"<em>{esc(k)}</em>" for k in kws)}</p>'
+
+
 def build_post(a, newer, older):
     path = f'/blog/{a["slug"]}/'
     tags = (''.join(f'<a class="chip" href="../?cat={quote(c)}">{esc(c)}</a>' for c in sort_cats(a['categories']))
             + ''.join(f'<span class="chip">{esc(t)}</span>' for t in a.get('tags', [])))
     views = (f'<span class="views" data-code="{esc(GOATCOUNTER)}" hidden></span>' if GOATCOUNTER else '')
-    meta = f'<time datetime="{a["date"]}">{fmt_full(a["date"])}</time>{views}'
+    meta = f'<time datetime="{a["date"]}">{date_disp(a)}</time>{views}'
 
     def nav(art, label, cls):
         if not art:
@@ -374,7 +387,7 @@ def build_post(a, newer, older):
     {f'<div class="tags">{tags}</div>' if tags else ''}
   </header>
   {cover_html}
-  <div class="prose narrow">{resolve(a["html"], "../../")}</div>
+  <div class="prose narrow">{resolve(a["html"], "../../")}</div>{keywords_html(a)}
   <nav class="post-nav narrow" aria-label="上一篇與下一篇">{nav(newer, "較新的文章 →", "newer")}{nav(older, "← 較舊的文章", "older")}</nav>
   {comments_section(a)}
 </article>'''
@@ -393,7 +406,7 @@ def build_home(entries, articles):
     thumbs = ''.join(
         f'<img src="assets/cooking/{im["thumb"]}" width="{im["w"]}" height="{im["h"]}" alt="" loading="lazy">'
         for im in latest)
-    posts = ''.join(f'<li><a href="blog/{a["slug"]}/"><time>{fmt_full(a["date"])}</time>{esc(a["title"])}</a></li>'
+    posts = ''.join(f'<li><a href="blog/{a["slug"]}/"><time>{date_disp(a)}</time>{esc(a["title"])}</a></li>'
                     for a in articles[:4])
     lede = ''.join(f'<span>{esc(s)}。</span>' for s in BIO.split('。') if s)
     body = f'''<div class="wrap">
