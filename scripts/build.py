@@ -21,6 +21,7 @@ SITE = 'https://mengyahh.com'
 BIO = '思想的巨人，行為的侏儒。努力探尋前進目標，想過上自由的生活。'
 EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
+WORK_URL = 'https://understory.mengyahh.com'      # "工作" in the top navigation opens the Understory site
 GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh.goatcounter.com (set GOATCOUNTER= to build without tracking)
 esc = html.escape
 
@@ -52,7 +53,7 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
     """Shared page shell. `base` is the relative prefix back to the site root ('', '../' or '../../')."""
     nav = [
         ('關於', f'{base}about/', 'about'),
-        ('作品集', f'{base}portfolio/', 'portfolio'),
+        ('工作', WORK_URL, 'work'),
         ('料理紀錄', f'{base}cooking/', 'cooking'),
         ('部落格', f'{base}blog/', 'blog'),
     ]
@@ -416,13 +417,9 @@ def build_home(entries, articles):
       <h2 class="serif">關於</h2>
       <p>自我介紹與經歷。</p>
     </a>
-    <a class="card" href="portfolio/">
-      <h2 class="serif">作品集</h2>
-      <p>過往的接案與作品。</p>
-    </a>
-    <a class="card" href="https://understory.mengyahh.com" rel="noopener">
-      <h2 class="serif">Understory ↗</h2>
-      <p>作品與接案品牌：給自由工作者的生活工作管理大師、白肉雞飼養紀錄。</p>
+    <a class="card" href="{WORK_URL}" rel="noopener">
+      <h2 class="serif">工作 ↗</h2>
+      <p>Understory：作品與接案品牌，給自由工作者的生活工作管理大師、白肉雞飼養紀錄。</p>
     </a>
   </div>
 </div>'''
