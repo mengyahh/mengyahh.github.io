@@ -64,24 +64,6 @@ a:hover { text-decoration-thickness: 2px; }
 .topnav a:hover { color: var(--accent); }
 .topnav a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
 
-/* "工作" drop-down */
-.topnav { align-items: center; }
-.topnav .has-sub { position: relative; }
-.topnav .sub-btn { font: inherit; color: var(--ink-soft); background: none; border: 0; border-bottom: 2px solid transparent; padding: 4px 0; cursor: pointer; }
-.topnav .sub-btn:hover, .topnav .sub-btn[aria-expanded="true"] { color: var(--accent); }
-.topnav .caret { display: inline-block; margin-left: 4px; font-size: 10px; transition: transform .2s ease; }
-.topnav .sub-btn[aria-expanded="true"] .caret { transform: rotate(180deg); }
-.topnav .sub {
-  display: none; position: absolute; top: calc(100% + 12px); left: -16px; min-width: 200px; z-index: 12;
-  list-style: none; margin: 0; padding: 8px 0; background: var(--bg);
-  border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: var(--shadow);
-}
-.topnav .sub.open { display: block; }
-.topnav .sub a, .topnav .sub .soon { display: block; padding: 8px 18px; border: 0; white-space: nowrap; font-size: 14.5px; }
-.topnav .sub a:hover { background: var(--accent-soft); }
-.topnav .sub .soon { color: var(--muted); cursor: default; }
-.topnav .sub .soon em { font-style: normal; font-size: 11px; letter-spacing: 0.04em; margin-left: 8px; padding: 2px 8px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); }
-
 /* footer */
 footer { margin-top: 72px; border-top: 1px solid var(--border); padding: 40px 0 64px; color: var(--ink-soft); font-size: 14px; }
 footer .bio { font-family: "Noto Serif TC", serif; font-size: 17px; color: var(--ink); margin: 0 0 6px; }
@@ -94,6 +76,4 @@ footer .copy { margin-top: 26px; font-size: 12.5px; color: var(--muted); }
   .wrap { padding: 0 18px; }
   .topbar .wrap { flex-direction: column; align-items: flex-start; gap: 6px; }
   .topnav { gap: 2px 16px; font-size: 14px; }
-  .topnav .has-sub { position: static; }
-  .topnav .sub { top: 100%; left: 18px; }
 }

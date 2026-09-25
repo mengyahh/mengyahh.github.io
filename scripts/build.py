@@ -24,8 +24,6 @@ SITE_DESC = '萌芽的個人網站：料理紀錄、部落格文章與工作。'
 EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
 WORK_URL = 'https://understory.mengyahh.com'      # the Understory site
-# The "工作" drop-down in the navigation (and the 工作 section on the home page): (label, address). No address = 「準備中」.
-WORK_MENU = [('AppSheet 系統製作', WORK_URL), ('文化工作', None), ('生態工作', None)]
 GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh.goatcounter.com (set GOATCOUNTER= to build without tracking)
 esc = html.escape
 AUTHOR = '萌芽'
@@ -65,22 +63,16 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
     """Shared page shell. `base` is the relative prefix back to the site root ('', '../' or '../../')."""
     nav = [
         ('關於', f'{base}about/', 'about'),
-        ('工作', None, 'work'),                                   # drop-down
+        ('工作', WORK_URL, 'work'),                               # goes straight to the Understory site
         ('料理紀錄', f'{base}cooking/', 'cooking'),
         ('部落格', f'{base}blog/', 'blog'),
     ]
     items = []
     for label, href, key in nav:
-        if href is None:
-            subs = ''.join(
-                (f'<li><a href="{esc(u)}" rel="noopener">{esc(t)} ↗</a></li>' if u else
-                 f'<li><span class="soon">{esc(t)}<em>準備中</em></span></li>') for t, u in WORK_MENU)
-            items.append(f'<li class="has-sub"><button type="button" class="sub-btn" aria-expanded="false" '
-                         f'aria-haspopup="true" aria-controls="sub-work">{label}<span class="caret" aria-hidden="true">▾</span></button>'
-                         f'<ul class="sub" id="sub-work">{subs}</ul></li>')
-            continue
+        ext = href.startswith('http')
         cur = ' aria-current="page"' if key == current else ''
-        items.append(f'<li><a href="{esc(href)}"{cur}>{label}</a></li>')
+        rel = ' rel="noopener"' if ext else ''
+        items.append(f'<li><a href="{esc(href)}"{cur}{rel}>{label}{" ↗" if ext else ""}</a></li>')
     og_image = og_image or f'{SITE}/{DEFAULT_OG}'
     og = (f'<meta property="og:image" content="{esc(og_image)}">'
           f'<meta property="og:locale" content="zh_TW">'
@@ -89,7 +81,7 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
           f'<meta name="twitter:image" content="{esc(og_image)}">')
     og += jsonld(*structured)
     styles = ''.join(f'<link rel="stylesheet" href="{base}assets/css/{c}.css">' for c in ('site',) + tuple(css))
-    scripts = ''.join(f'<script src="{base}assets/js/{j}.js" defer></script>' for j in ('nav',) + tuple(js))
+    scripts = ''.join(f'<script src="{base}assets/js/{j}.js" defer></script>' for j in tuple(js))
     analytics = ''
     stats_note = ''
     if GOATCOUNTER:
@@ -445,9 +437,6 @@ def build_home(entries, articles):
         for im in latest)
     posts = ''.join(f'<li><a href="blog/{a["slug"]}/"><time>{date_disp(a)}</time>{esc(a["title"])}</a></li>'
                     for a in articles[:5])
-    work = ''.join(
-        (f'<li><a href="{esc(u)}" rel="noopener">{esc(t)} ↗</a></li>' if u else
-         f'<li><span class="soon">{esc(t)}<em>準備中</em></span></li>') for t, u in WORK_MENU)
     body = f'''<div class="wrap">
   <div class="home-hero">
     <p class="eyebrow">mengyahh.com</p>
@@ -468,9 +457,8 @@ def build_home(entries, articles):
       <p class="sec-desc">自我介紹與經歷。</p>
     </section>
     <section class="home-sec">
-      <div class="sec-head"><h2 class="serif">工作</h2></div>
+      <div class="sec-head"><h2 class="serif"><a href="{WORK_URL}" rel="noopener">工作</a></h2><a class="sec-more" href="{WORK_URL}" rel="noopener">前往 Understory ↗</a></div>
       <p class="sec-desc">Understory：作品與接案品牌。</p>
-      <ul class="work-list">{work}</ul>
     </section>
   </div>
 </div>'''
