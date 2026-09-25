@@ -28,6 +28,8 @@ WORK_URL = 'https://understory.mengyahh.com'      # the Understory site
 WORK_MENU = [('AppSheet 系統製作', WORK_URL), ('文化工作', None), ('生態工作', None)]
 GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh.goatcounter.com (set GOATCOUNTER= to build without tracking)
 esc = html.escape
+AUTHOR = '萌芽'
+DEFAULT_OG = 'assets/img/banner.webp'        # share image for pages that have no photo of their own
 
 # Comments (Cloudflare Worker in /worker). Both must be set, otherwise pages are built without a comment area.
 COMMENTS_API = os.environ.get('COMMENTS_API', 'https://comments.mengyahh.com')   # set COMMENTS_API= (empty) to build without comments
@@ -52,8 +54,14 @@ def resolve(s, base):
     return s.replace('@ASSET/', f'{base}assets/').replace('@BLOG/', f'{base}blog/').replace('@SITE/', base)
 
 
+def jsonld(*objs):
+    """<script type="application/ld+json"> blocks (structured data for search engines)."""
+    return ''.join('<script type="application/ld+json">' + json.dumps(o, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/') + '</script>'
+                   for o in objs)
+
+
 def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=None, og_type='website',
-           extra_head=''):
+           extra_head='', structured=()):
     """Shared page shell. `base` is the relative prefix back to the site root ('', '../' or '../../')."""
     nav = [
         ('關於', f'{base}about/', 'about'),
@@ -73,7 +81,13 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
             continue
         cur = ' aria-current="page"' if key == current else ''
         items.append(f'<li><a href="{esc(href)}"{cur}>{label}</a></li>')
-    og = f'<meta property="og:image" content="{esc(og_image)}">' if og_image else ''
+    og_image = og_image or f'{SITE}/{DEFAULT_OG}'
+    og = (f'<meta property="og:image" content="{esc(og_image)}">'
+          f'<meta property="og:locale" content="zh_TW">'
+          f'<meta name="twitter:card" content="summary_large_image">'
+          f'<meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(desc)}">'
+          f'<meta name="twitter:image" content="{esc(og_image)}">')
+    og += jsonld(*structured)
     styles = ''.join(f'<link rel="stylesheet" href="{base}assets/css/{c}.css">' for c in ('site',) + tuple(css))
     scripts = ''.join(f'<script src="{base}assets/js/{j}.js" defer></script>' for j in ('nav',) + tuple(js))
     analytics = ''
@@ -400,11 +414,26 @@ def build_post(a, newer, older):
   {comments_section(a)}
 </article>'''
     c = a.get('cover')
+    url = f'{SITE}{path}'
+    posting = {'@context': 'https://schema.org', '@type': 'BlogPosting', 'headline': a['title'], 'description': short(a['abstract'], 160),
+               'datePublished': a['date'], 'dateModified': a['date'], 'inLanguage': 'zh-Hant', 'url': url,
+               'mainEntityOfPage': {'@type': 'WebPage', '@id': url},
+               'author': {'@type': 'Person', 'name': AUTHOR, 'url': SITE + '/'},
+               'publisher': {'@type': 'Organization', 'name': '萌芽中。', 'url': SITE + '/'}}
+    if c:
+        posting['image'] = f'{SITE}/assets/{c["src"]}'
+    kws = a.get('keywords') or a.get('tags')
+    if kws:
+        posting['keywords'] = ', '.join(kws)
+    crumbs = {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
+        {'@type': 'ListItem', 'position': 1, 'name': '萌芽中。', 'item': SITE + '/'},
+        {'@type': 'ListItem', 'position': 2, 'name': '部落格', 'item': SITE + '/blog/'},
+        {'@type': 'ListItem', 'position': 3, 'name': a['title'], 'item': url}]}
     return layout(base='../../', title=f'{a["title"]} · 萌芽中。', desc=short(a['abstract'], 120), path=path,
                   body=body, current='blog', css=('blog',) + (('lightbox',) if 'class="gallery"' in a['html'] else ()),
                   js=(('lightbox',) if 'class="gallery"' in a['html'] else ()) + (('views',) if GOATCOUNTER else ()) + (('comments',) if COMMENTS_API and TURNSTILE_SITEKEY else ()),
                   og_image=f'{SITE}/assets/{c["src"]}' if c else None, og_type='article',
-                  extra_head=f'<meta property="article:published_time" content="{a["date"]}">')
+                  extra_head=f'<meta property="article:published_time" content="{a["date"]}">', structured=(posting, crumbs))
 
 
 # ------------------------------------------------------------------ home / misc
@@ -447,8 +476,11 @@ def build_home(entries, articles):
     </section>
   </div>
 </div>'''
+    site = {'@context': 'https://schema.org', '@type': 'WebSite', 'name': '萌芽中。', 'url': SITE + '/', 'inLanguage': 'zh-Hant'}
+    me = {'@context': 'https://schema.org', '@type': 'Person', 'name': AUTHOR, 'url': SITE + '/', 'description': BIO,
+          'sameAs': [INSTAGRAM]}
     return layout(base='', title='萌芽中。 · mengyahh', desc=BIO, path='/', body=body, current=None,
-                  css=('home',))
+                  css=('home',), structured=(site, me))
 
 
 def banner_html(base, banner):

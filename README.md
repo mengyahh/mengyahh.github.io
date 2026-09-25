@@ -12,12 +12,12 @@
 ## 結構
 
 ```
-content/blog/            新的部落格文章（一篇一個 Markdown 檔）
+content/blog/            所有部落格文章（一篇一個 Markdown 檔，含從 Vocus、Strikingly、Instagram 搬來的）
 content/cooking/         新的料理紀錄（一則一個 Markdown 檔）；寫法見 content/README.md
 data/cooking.json        舊的料理紀錄（Google Site 搬來的：日期、標題、文字、照片）
 data/about.json          關於頁內容（分區、標籤、個人資料）
 data/portfolio.json      作品集內容（分組、項目、圖片；影片只存 YouTube 代碼，頁面以本機封面圖顯示，按播放才載入）
-data/blog.json           舊的部落格文章（Vocus、Strikingly 搬來的：標題、日期、分類、內文 HTML）
+data/blog.json           （已清空）部落格文章全部改放在 content/blog/，一篇一個 Markdown 檔
 assets/blog/<日期>/      文章圖片（WebP，已去除 EXIF）
 assets/data/blog-search.json  站內搜尋用的索引（產生檔）
 assets/cooking/          照片（xxx.webp 大圖 1280px、xxx-t.webp 縮圖 640px，已去除 EXIF）

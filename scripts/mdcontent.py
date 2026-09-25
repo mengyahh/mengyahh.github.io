@@ -109,7 +109,7 @@ def sync_filenames():
 
 def inline(s, titles):
     s = esc(s)
-    for tag in ('sub', 'sup', 'br'):                       # a few HTML tags may be written directly
+    for tag in ('sub', 'sup', 'br', 'em', 's', 'u'):                       # a few HTML tags may be written directly
         s = s.replace(f'&lt;{tag}&gt;', f'<{tag}>').replace(f'&lt;/{tag}&gt;', f'</{tag}>')
     # 〈another article's title〉 becomes a link to it; the part before "：" is enough
     s = re.sub(r'〈([^〉]+)〉', lambda m: (f'<a href="@BLOG/{titles[m.group(1)]}/">〈{m.group(1)}〉</a>'
@@ -147,6 +147,8 @@ def chunks(body):
             continue
         if IMG_LINE.match(raw):
             kind = 'img'
+        elif re.match(r'<(p|figure|ul|ol|blockquote|div|h[1-6]|table)\b', raw) and raw.endswith('>'):
+            kind = 'html'                                            # a block written directly in HTML is kept as is
         elif re.match(r'^#{2,4} ', raw):
             kind = 'h'
         elif raw == '**備忘**':
@@ -174,6 +176,8 @@ def render_block(kind, raw, titles, after_memo=False):
         return '<p class="memo-label">備忘</p>'
     if kind == 'hr':
         return '<hr>'
+    if kind == 'html':
+        return raw
     if kind == 'ul':
         lis = ''.join(f'<li>{inline(l[2:].strip(), titles)}</li>' for l in lines)
         return f'<ul class="memo">{lis}</ul>' if after_memo else f'<ul>{lis}</ul>'
@@ -182,7 +186,17 @@ def render_block(kind, raw, titles, after_memo=False):
         open_tag = '<ol>' if start == '1' else f'<ol start="{start}">'
         return open_tag + ''.join(f'<li>{inline(re.sub(r"^\d+[.)] ", "", l), titles)}</li>' for l in lines) + '</ol>'
     if kind == 'quote':
-        return '<blockquote><p>' + inline('\n'.join(l.lstrip('>').strip() for l in lines), titles) + '</p></blockquote>'
+        paras, cur = [], []
+        for l in lines:
+            t = l.lstrip('>').strip()
+            if t:
+                cur.append(t)
+            elif cur:
+                paras.append(cur)
+                cur = []
+        if cur:
+            paras.append(cur)
+        return '<blockquote>' + ''.join(f'<p>{inline(chr(10).join(x), titles)}</p>' for x in paras) + '</blockquote>'
     return f'<p>{inline(raw, titles)}</p>'
 
 
@@ -275,11 +289,15 @@ def blog_articles(json_articles):
                 raise SystemExit(f'{name}: cover "{cover_fn}" not found in assets/blog/{folder}/')
             w, h = image_size(os.path.join(imgdir, cover_fn))
             cover = {'src': f'blog/{folder}/{cover_fn}', 'w': w, 'h': h}
-        art = {'slug': slug, 'source': 'markdown', 'title': meta['title'], 'date': slug,
-               'categories': as_list(meta['categories']), 'tags': [], 'abstract': meta.get('summary', ''),
+        art = {'slug': slug, 'source': meta.get('source') or 'markdown', 'title': meta['title'], 'date': slug,
+               'categories': as_list(meta['categories']), 'tags': as_list(meta.get('tags')), 'abstract': meta.get('summary', ''),
                'keywords': as_list(meta.get('keywords')), 'kwlines': kw_lines, 'cover': cover, 'html': ''.join(parts)}
         if meta.get('date_label'):
             art['date_label'] = meta['date_label']
+        if meta.get('paid', '').lower() in ('yes', 'true', '1'):
+            art['pay'] = True                          # (kept from Vocus; a paywalled article that was made public)
+        if meta.get('vocus_id'):
+            art['vocus_id'] = meta['vocus_id']
         if cover and meta.get('banner', '').lower() not in ('yes', 'true', '1'):
             art['cover_is_first_image'] = True          # the list thumbnail only; the article opens with its text
         arts.append(art)

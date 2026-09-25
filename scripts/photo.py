@@ -67,7 +67,8 @@ def main():
             save(im, os.path.join(folder, f'{name}-{n}-t.webp'), 640, 76)
             lines.append(f'![]({name}-{n}.webp)')
             n += 1
-    print('Saved. Paste these lines into the .md file where the photos should go:\n')
+    print('Saved. Paste these lines into the .md file where the photos should go.')
+    print('Tip: write a short description of what is in the photo inside the [ ] (helps Google Images and screen readers).\n')
     print('\n\n'.join(lines))
 
 
