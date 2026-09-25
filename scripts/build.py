@@ -20,7 +20,7 @@ import mdcontent
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://mengyahh.com'
-BIO = '思想的巨人，行為的侏儒。努力探尋前進目標，想過上自由的生活。'
+SITE_DESC = '萌芽的個人網站：料理紀錄、部落格文章與工作。'      # home page <meta description>
 EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
 WORK_URL = 'https://understory.mengyahh.com'      # the Understory site
@@ -445,7 +445,6 @@ def build_home(entries, articles):
         for im in latest)
     posts = ''.join(f'<li><a href="blog/{a["slug"]}/"><time>{date_disp(a)}</time>{esc(a["title"])}</a></li>'
                     for a in articles[:5])
-    lede = ''.join(f'<span>{esc(s)}。</span>' for s in BIO.split('。') if s)
     work = ''.join(
         (f'<li><a href="{esc(u)}" rel="noopener">{esc(t)} ↗</a></li>' if u else
          f'<li><span class="soon">{esc(t)}<em>準備中</em></span></li>') for t, u in WORK_MENU)
@@ -453,7 +452,6 @@ def build_home(entries, articles):
   <div class="home-hero">
     <p class="eyebrow">mengyahh.com</p>
     <h1 class="serif">萌芽中<span>。</span></h1>
-    <p class="lede">{lede}</p>
   </div>
   <section class="home-sec">
     <div class="sec-head"><h2 class="serif"><a href="cooking/">料理紀錄</a></h2><a class="sec-more" href="cooking/">全部 →</a></div>
@@ -477,9 +475,9 @@ def build_home(entries, articles):
   </div>
 </div>'''
     site = {'@context': 'https://schema.org', '@type': 'WebSite', 'name': '萌芽中。', 'url': SITE + '/', 'inLanguage': 'zh-Hant'}
-    me = {'@context': 'https://schema.org', '@type': 'Person', 'name': AUTHOR, 'url': SITE + '/', 'description': BIO,
+    me = {'@context': 'https://schema.org', '@type': 'Person', 'name': AUTHOR, 'url': SITE + '/',
           'sameAs': [INSTAGRAM]}
-    return layout(base='', title='萌芽中。 · mengyahh', desc=BIO, path='/', body=body, current=None,
+    return layout(base='', title='萌芽中。 · mengyahh', desc=SITE_DESC, path='/', body=body, current=None,
                   css=('home',), structured=(site, me))
 
 
