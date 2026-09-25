@@ -602,7 +602,7 @@ if __name__ == '__main__':
     json_articles = load('blog.json', 'articles')
     for old, new in mdcontent.filename_mismatches():
         print(f'note: {os.path.basename(old)} has a different date than its file name (publish.py renames it to {os.path.basename(new)})')
-    articles = sorted(json_articles + mdcontent.blog_articles(json_articles), key=lambda a: a['date'], reverse=True)
+    articles = sorted(json_articles + mdcontent.blog_articles(json_articles), key=lambda a: (a['date'], a.get('seq', 1)), reverse=True)
 
     shutil.rmtree(os.path.join(ROOT, 'blog'), ignore_errors=True)      # drop pages of removed articles
     write('cooking/index.html', build_cooking(entries))

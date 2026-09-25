@@ -215,7 +215,7 @@ def render_gallery(raw, gid, folder, imgdir, name, default_alt):
         alt, fn, cap = m.groups()
         caption = cap or alt
         if not os.path.isfile(os.path.join(imgdir, fn)):
-            raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{folder}/')
+            raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{folder}/{hint}')
         thumb = re.sub(r'\.(\w+)$', r'-t.\1', fn)
         if not os.path.isfile(os.path.join(imgdir, thumb)):
             thumb = fn                                        # no -t thumbnail: use the photo itself
@@ -251,10 +251,16 @@ def thumb_name(fn):
     return re.sub(r'\.(\w+)$', r'-t.\1', fn)
 
 
+def slug_of(meta):
+    """Article address: the date, plus "-2", "-3"... for the second, third... article of the same day (front matter `seq:`)."""
+    seq = int(meta.get('seq') or 1)
+    return meta['date'] if seq == 1 else f"{meta['date']}-{seq}"
+
+
 def title_map(json_articles, md_metas):
     """article title (and its part before "：") -> slug"""
     t = {}
-    pairs = [(a['title'], a['slug']) for a in json_articles] + [(m['title'], m['date']) for m in md_metas]
+    pairs = [(a['title'], a['slug']) for a in json_articles] + [(m['title'], slug_of(m)) for m in md_metas]
     for title, slug in pairs:
         t[title] = slug
     for title, slug in pairs:
@@ -272,16 +278,22 @@ def blog_articles(json_articles):
     arts = []
     for meta, body, path in files:
         name = os.path.basename(path)
-        slug = meta.get('date', '')
-        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', slug):
-            raise SystemExit(f'{name}: date must look like 2025-09-29 (it is also the article address); got "{slug}"')
+        date = meta.get('date', '')
+        if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', date):
+            raise SystemExit(f'{name}: date must look like 2025-09-29 (it is also the article address); got "{date}"')
+        if not re.fullmatch(r'\d{1,2}', meta.get('seq') or '1'):
+            raise SystemExit(f'{name}: seq must be a number like 2 (the 2nd article of that day); got "{meta.get("seq")}"')
+        seq = int(meta.get('seq') or 1)
+        slug = slug_of(meta)
         if slug in taken:
-            raise SystemExit(f'{name}: another article already uses the address /blog/{slug}/')
+            raise SystemExit(f'{name}: another article already uses the address /blog/{slug}/ '
+                             f'(a second article on the same day needs "seq: 2" in its front matter)')
         taken.add(slug)
         for k in ('title', 'categories'):
             if not meta.get(k):
                 raise SystemExit(f'{name}: front matter needs "{k}"')
         folder = meta.get('photos') or slug             # photo folder in assets/blog/ (stays put when the date is changed)
+        hint = '' if meta.get('photos') else ' (if you changed the date, add a line "photos: <the old folder name>" to the front matter)'
         imgdir = os.path.join(ROOT, 'assets', 'blog', folder)
         blocks, kw_lines = chunks(body)
         parts, n, galleries = [], 0, 0
@@ -290,7 +302,7 @@ def blog_articles(json_articles):
             if kind == 'img':
                 alt, fn, cap = IMG_LINE.match(raw).groups()
                 if not os.path.isfile(os.path.join(imgdir, fn)):
-                    raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{folder}/')
+                    raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{folder}/{hint}')
                 w, h = image_size(os.path.join(imgdir, fn))
                 n += 1
                 alt = alt or cap or f'{meta["title"]}（照片 {n}）'
@@ -307,14 +319,14 @@ def blog_articles(json_articles):
         cover_fn = cover_file(meta, body, imgdir)
         if cover_fn:
             if not os.path.isfile(os.path.join(imgdir, cover_fn)):
-                raise SystemExit(f'{name}: cover "{cover_fn}" not found in assets/blog/{folder}/')
+                raise SystemExit(f'{name}: cover "{cover_fn}" not found in assets/blog/{folder}/{hint}')
             w, h = image_size(os.path.join(imgdir, cover_fn))
             cover = cover_thumb = {'src': f'blog/{folder}/{cover_fn}', 'w': w, 'h': h}
             tfn = thumb_name(cover_fn)
             if os.path.isfile(os.path.join(imgdir, tfn)):        # small version for the article list, if there is one
                 tw, th = image_size(os.path.join(imgdir, tfn))
                 cover_thumb = {'src': f'blog/{folder}/{tfn}', 'w': tw, 'h': th}
-        art = {'slug': slug, 'source': meta.get('source') or 'markdown', 'title': meta['title'], 'date': slug,
+        art = {'slug': slug, 'source': meta.get('source') or 'markdown', 'title': meta['title'], 'date': date, 'seq': seq,
                'categories': as_list(meta['categories']), 'tags': as_list(meta.get('tags')), 'abstract': meta.get('summary', ''),
                'keywords': as_list(meta.get('keywords')), 'kwlines': kw_lines, 'cover': cover, 'cover_thumb': cover_thumb,
                'html': ''.join(parts)}

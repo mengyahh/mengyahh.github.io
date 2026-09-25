@@ -16,7 +16,7 @@
 const MAX_BODY = 2000;
 const MAX_NAME = 40;
 const MAX_EMAIL = 254;
-const PAGE_RE = /^\/blog\/\d{4}-\d{2}-\d{2}\/$/;
+const PAGE_RE = /^\/blog\/\d{4}-\d{2}-\d{2}(-\d{1,2})?\/$/;      // /blog/2026-09-10/ or /blog/2026-09-10-2/ (2nd article that day)
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_FILL_MS = 2500;                      // humans need more than this to type a comment
 const RATE_10MIN = 3;

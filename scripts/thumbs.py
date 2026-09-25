@@ -23,8 +23,7 @@ def ensure():
         return []
     made = []
     for meta, body, path in M.read_dir('blog'):
-        slug = meta.get('date', '')
-        folder = meta.get('photos') or slug
+        folder = meta.get('photos') or M.slug_of(meta)
         imgdir = os.path.join(M.ROOT, 'assets', 'blog', folder)
         fn = M.cover_file(meta, body, imgdir)
         if not fn or fn.endswith('-t.webp') or not os.path.isfile(os.path.join(imgdir, fn)):
