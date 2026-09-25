@@ -528,54 +528,98 @@ def build_about(a):
                   og_image=f'{SITE}/assets/{a["profile"]["img"]["src"]}')
 
 
+def portfolio_rows(g, base, gi):
+    """The rows (label + description + photos / videos) of one work."""
+    rows = []
+    for ri, r in enumerate(g['rows']):
+        n_media = len(r['media'])
+        has_video = any(m['type'] == 'video' for m in r['media'])
+        cls = 'wide' if has_video else {1: 'c1', 2: 'c2'}.get(n_media, 'c3')
+        items = []
+        gid = f'pf-{gi}-{ri}'
+        for i, m in enumerate(r['media'], 1):
+            cap = f'<figcaption>{resolve(m["caption"], base)}</figcaption>' if m.get('caption') else ''
+            if m['type'] == 'video':
+                items.append(
+                    f'<figure class="pf-item"><button type="button" class="yt" data-yt="{esc(m["yt"])}" aria-label="播放影片：{esc(r["label"])}">'
+                    f'<img src="{base}assets/{m["poster"]}" width="{m["w"]}" height="{m["h"]}" alt="" loading="lazy" decoding="async">'
+                    f'<span class="yt-play" aria-hidden="true"></span></button>{cap}</figure>')
+            elif m.get('href'):
+                items.append(
+                    f'<figure class="pf-item"><a class="out" href="{esc(m["href"])}" target="_blank" rel="noopener">'
+                    f'<img src="{base}assets/{m["thumb"]}" width="{m["w"]}" height="{m["h"]}" alt="{esc(r["label"])}：作品 {i}" loading="lazy" decoding="async"></a>{cap}</figure>')
+            else:
+                alt = f'{r["label"]}：作品 {i}'
+                items.append(
+                    f'<figure class="pf-item"><a class="ph" href="{base}assets/{m["src"]}" data-group="{gid}" data-title="{esc(r["label"])}" data-alt="{esc(alt)}">'
+                    f'<img src="{base}assets/{m["thumb"]}" width="{m["w"]}" height="{m["h"]}" alt="{esc(alt)}" loading="lazy" decoding="async"></a>{cap}</figure>')
+        desc = ''.join(f'<p>{resolve(d, base)}</p>' for d in r['desc'])
+        rows.append(f'<article class="pf-row"><div class="pf-info"><h2>{esc(r["label"])}</h2>{desc}</div>'
+                    f'<div class="pf-grid {cls}">{"".join(items)}</div></article>')
+    return ''.join(rows)
+
+
+def portfolio_cover(g):
+    """(thumb, full, w, h) of the first picture of a work (a video's poster counts)."""
+    for r in g['rows']:
+        for m in r['media']:
+            if m['type'] == 'video':
+                return m['poster'], m['poster'], m['w'], m['h']
+            return m['thumb'], m['src'], m['w'], m['h']
+    return None
+
+
 def build_portfolio(pf, banner):
-    base = '../'
-    groups = []
+    """/portfolio/ : a short list that links to one page per work."""
+    items = []
     for g in pf['groups']:
-        rows = []
-        for ri, r in enumerate(g['rows']):
-            n_media = len(r['media'])
-            has_video = any(m['type'] == 'video' for m in r['media'])
-            cls = 'wide' if has_video else {1: 'c1', 2: 'c2'}.get(n_media, 'c3')
-            items = []
-            gid = f'pf-{len(groups)}-{ri}'
-            for i, m in enumerate(r['media'], 1):
-                cap = f'<figcaption>{resolve(m["caption"], base)}</figcaption>' if m.get('caption') else ''
-                if m['type'] == 'video':
-                    items.append(
-                        f'<figure class="pf-item"><button type="button" class="yt" data-yt="{esc(m["yt"])}" aria-label="播放影片：{esc(r["label"])}">'
-                        f'<img src="{base}assets/{m["poster"]}" width="{m["w"]}" height="{m["h"]}" alt="" loading="lazy" decoding="async">'
-                        f'<span class="yt-play" aria-hidden="true"></span></button>{cap}</figure>')
-                elif m.get('href'):
-                    items.append(
-                        f'<figure class="pf-item"><a class="out" href="{esc(m["href"])}" target="_blank" rel="noopener">'
-                        f'<img src="{base}assets/{m["thumb"]}" width="{m["w"]}" height="{m["h"]}" alt="{esc(r["label"])}：作品 {i}" loading="lazy" decoding="async"></a>{cap}</figure>')
-                else:
-                    alt = f'{r["label"]}：作品 {i}'
-                    items.append(
-                        f'<figure class="pf-item"><a class="ph" href="{base}assets/{m["src"]}" data-group="{gid}" data-title="{esc(r["label"])}" data-alt="{esc(alt)}">'
-                        f'<img src="{base}assets/{m["thumb"]}" width="{m["w"]}" height="{m["h"]}" alt="{esc(alt)}" loading="lazy" decoding="async"></a>{cap}</figure>')
-            desc = ''.join(f'<p>{resolve(d, base)}</p>' for d in r['desc'])
-            rows.append(f'<article class="pf-row"><div class="pf-info"><h3>{esc(r["label"])}</h3>{desc}</div>'
-                        f'<div class="pf-grid {cls}">{"".join(items)}</div></article>')
-        title = g['title'] or g['kind']
-        kind = f'<span class="pf-kind">{esc(g["kind"])}</span>' if g['title'] else ''
-        groups.append(f'<section class="pf-group"><header class="pf-head">{kind}<h2 class="serif">{esc(title)}</h2></header>{"".join(rows)}</section>')
+        cov = portfolio_cover(g)
+        img = (f'<span class="pf-cover"><img src="../assets/{cov[0]}" width="{cov[2]}" height="{cov[3]}" alt="" loading="lazy" decoding="async"></span>'
+               if cov else '')
+        tags = '｜'.join(r['label'] for r in g['rows'])
+        items.append(f'<li><a href="{g["slug"]}/">{img}<span class="pf-meta"><span class="pf-kind">{esc(g["kind"])}</span>'
+                     f'<strong class="serif">{esc(g["title"])}</strong><span class="pf-tags">{esc(tags)}</span></span></a></li>')
     body = f'''<div class="wrap">
-  {banner_html(base, banner)}
+  {banner_html('../', banner)}
   <div class="page-head">
     <p class="eyebrow">Portfolio</p>
     <h1>作品集</h1>
   </div>
-  {"".join(groups)}
+  <ul class="pf-index">{"".join(items)}</ul>
 </div>'''
-    return layout(base=base, title='作品集 · 萌芽中。', desc='萌芽的作品集：科普教材、藝文市集、美編設計、動畫與影片、攝影。',
-                  path='/portfolio/', body=body, current='portfolio', css=('pages', 'lightbox'), js=('lightbox', 'yt'),
+    names = '、'.join(g['title'] for g in pf['groups'])
+    return layout(base='../', title='作品集 · 萌芽中。', desc=f'萌芽的作品集：{names}。',
+                  path='/portfolio/', body=body, current='portfolio', css=('pages',),
                   og_image=f'{SITE}/assets/{banner["src"]}')
 
 
-def build_sitemap(articles):
+def build_portfolio_page(g, gi):
+    """/portfolio/<slug>/ : one work with all its rows."""
+    base = '../../'
+    path = f'/portfolio/{g["slug"]}/'
+    labels = '、'.join(r['label'] for r in g['rows'])
+    cov = portfolio_cover(g)
+    body = f'''<div class="wrap">
+  <div class="page-head">
+    <p class="eyebrow"><a href="../">Portfolio · 作品集</a></p>
+    <h1 class="serif">{esc(g["title"])}</h1>
+    <p class="lede">{esc(labels)}</p>
+  </div>
+  <section class="pf-group">{portfolio_rows(g, base, gi)}</section>
+  <p class="pf-back"><a href="../">← 回作品集</a></p>
+</div>'''
+    crumbs = {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': [
+        {'@type': 'ListItem', 'position': 1, 'name': '萌芽中。', 'item': SITE + '/'},
+        {'@type': 'ListItem', 'position': 2, 'name': '作品集', 'item': SITE + '/portfolio/'},
+        {'@type': 'ListItem', 'position': 3, 'name': g['title'], 'item': SITE + path}]}
+    return layout(base=base, title=f'{g["title"]} · 作品集 · 萌芽中。', desc=f'{g["title"]}：{labels}。', path=path, body=body,
+                  current='portfolio', css=('pages', 'lightbox'), js=('lightbox', 'yt'),
+                  og_image=f'{SITE}/assets/{cov[1]}' if cov else None, structured=(crumbs,))
+
+
+def build_sitemap(articles, extra=()):
     urls = [('/', None), ('/about/', None), ('/portfolio/', None), ('/cooking/', None), ('/blog/', articles[0]['date'] if articles else None)]
+    urls += [(u, None) for u in extra]
     urls += [(f'/blog/{a["slug"]}/', a['date']) for a in articles]
     rows = ''.join(f'<url><loc>{SITE}{p}</loc>' + (f'<lastmod>{d}</lastmod>' if d else '') + '</url>' for p, d in urls)
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -617,8 +661,11 @@ if __name__ == '__main__':
     portfolio = json.load(open(os.path.join(ROOT, 'data', 'portfolio.json'), encoding='utf-8'))
     write('about/index.html', build_about(about))
     write('portfolio/index.html', build_portfolio(portfolio, about['banner']))
+    for gi, g in enumerate(portfolio['groups']):
+        write(f'portfolio/{g["slug"]}/index.html', build_portfolio_page(g, gi), quiet=True)
+    print('wrote portfolio/<slug>/index.html x', len(portfolio['groups']))
     write('assets/data/blog-search.json', build_search_index(articles))
-    write('sitemap.xml', build_sitemap(articles))
+    write('sitemap.xml', build_sitemap(articles, [f'/portfolio/{g["slug"]}/' for g in portfolio['groups']]))
     write('robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
     print('comments:', COMMENTS_API if COMMENTS_API and TURNSTILE_SITEKEY else 'off (COMMENTS_API / TURNSTILE_SITEKEY not set)')
     print('view counts:', f'GoatCounter "{GOATCOUNTER}"' if GOATCOUNTER else 'off (GOATCOUNTER not set)')
