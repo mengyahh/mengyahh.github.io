@@ -523,7 +523,7 @@ def build_about(a):
     </div>
   </section>
 </div>'''
-    return layout(base=base, title='關於 · 萌芽中。', desc='萌芽的自我介紹：接案 4 年的自由工作者，以內容轉譯、數位內容製作、企劃為主。',
+    return layout(base=base, title='關於 · 萌芽中。', desc='萌芽（Meng Ya）的自我介紹：接案 5 年的非典型自由工作者，擅長拆解問題與研究分析，提供從分析、規劃到製作的服務。',
                   path='/about/', body=body, current='about', css=('pages',),
                   og_image=f'{SITE}/assets/{a["profile"]["img"]["src"]}')
 
