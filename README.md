@@ -5,7 +5,7 @@
 - `/` 首頁
 - `/cooking/` 料理紀錄（由舊 Google Site 搬過來）
 - `/blog/` 部落格（由 Vocus 與舊 Strikingly 部落格搬過來；每篇在 `/blog/YYYY-MM-DD/`）；列表頁右側欄有搜尋、系列、年份篩選
-- `/about/` 關於、`/portfolio/` 作品集（列出作品，每個作品一頁：`/portfolio/daodu-hexi/` 島讀河溪、`/portfolio/lecheng/` 樂城生活節；由舊 Google Site 搬過來，橫幅用 `assets/img/banner.webp`）
+- `/about/` 關於（作品集已搬到 Understory 網站：https://understory.mengyahh.com/about.html#projects ；舊網址 `/portfolio/…` 只留轉址頁）
 
 全站固定是淺色主題（米色底、深色字），不會跟著系統切換成深色。
 
@@ -16,7 +16,6 @@ content/blog/            所有部落格文章（一篇一個 Markdown 檔，含
 content/cooking/         所有料理紀錄（一則一個 Markdown 檔）；寫法見 content/README.md
 data/cooking.json        （已清空）料理紀錄全部改放在 content/cooking/
 data/about.json          關於頁內容（分區、標籤、個人資料）
-data/portfolio.json      作品集內容：`groups` 是有獨立頁面的作品（slug＝網址）；`parked` 是先收起來、不顯示的「專項」（美編、動畫、攝影…），要放回網站時移到 `groups` 並加上 `slug`。影片只存 YouTube 代碼，頁面以本機封面圖顯示，按播放才載入
 data/blog.json           （已清空）部落格文章全部改放在 content/blog/，一篇一個 Markdown 檔
 assets/blog/<日期>/      文章圖片（WebP，已去除 EXIF）
 assets/data/blog-search.json  站內搜尋用的索引（產生檔）
@@ -26,7 +25,7 @@ scripts/mdcontent.py     讀 content/ 的 Markdown
 scripts/photo.py         縮圖、轉 WebP、去 EXIF，並印出要貼進 .md 的照片行
 scripts/preview.py       本機預覽（存檔自動重建）；preview.bat 是雙擊版
 publish.py               建置、commit、push 到線上；publish.bat 是雙擊版
-scripts/build.py         由 data/*.json 與 content/**/*.md 產生 index.html、about/、portfolio/、cooking/、blog/、sitemap.xml、robots.txt
+scripts/build.py         由 data/*.json 與 content/**/*.md 產生 index.html、about/、cooking/、blog/、sitemap.xml、robots.txt
 ```
 
 `index.html`、`about/`、`portfolio/`、`cooking/`、`blog/`、`sitemap.xml` 是**產生出來的檔案**，不要直接改，改 `scripts/build.py` 或 `data/*.json` 後重跑。
