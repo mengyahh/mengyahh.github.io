@@ -11,6 +11,7 @@ import time
 import webbrowser
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 PORT = int(os.environ.get('PORT', '8000'))
 
 
@@ -27,6 +28,12 @@ def snapshot():
 
 
 def build():
+    try:
+        import thumbs
+        for f in thumbs.ensure():
+            print('made thumbnail', f)
+    except Exception as e:                       # thumbnails are optional (need Pillow)
+        print('(thumbnails skipped:', e, ')')
     r = subprocess.run([sys.executable, os.path.join(ROOT, 'scripts', 'build.py')], cwd=ROOT, capture_output=True, text=True, encoding='utf-8')
     if r.returncode:
         print('\n*** Build failed:', (r.stderr or r.stdout).strip().splitlines()[-1])

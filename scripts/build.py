@@ -286,7 +286,7 @@ def build_blog_index(articles):
         for a in arts:
             cover = ''
             if a.get('cover'):
-                c = a['cover']
+                c = a.get('cover_thumb') or a['cover']
                 cover = (f'<div class="row-cover"><img src="../assets/{c["src"]}" width="{c["w"]}" height="{c["h"]}" '
                          f'alt="" loading="lazy" decoding="async"></div>')
             cats_sorted = sort_cats(a['categories'])

@@ -23,6 +23,12 @@ def run(*cmd, check=True):
 
 for old, new in mdcontent.sync_filenames():
     print(f'Renamed to match its date: {old}  ->  {new}')
+try:
+    import thumbs
+    for f in thumbs.ensure():
+        print('Made cover thumbnail:', f)
+except Exception as e:                                   # optional (needs Pillow)
+    print('(cover thumbnails skipped:', e, ')')
 run(sys.executable, 'scripts/build.py')
 print('Built.')
 status = run('git', 'status', '--short')

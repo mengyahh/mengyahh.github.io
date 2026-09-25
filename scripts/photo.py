@@ -4,7 +4,7 @@ r"""Add photos to an article or a cooking note: resize, convert to WebP, strip E
     python scripts/photo.py blog content/blog/2025-09-29_小豆島.md D:\pics\a.jpg D:\pics\b.jpg
     python scripts/photo.py cooking 202601-a D:\pics\a.jpg
 
-blog    -> the article's photo folder (photos: or date in the front matter) assets/blog/<folder>/NN.webp + NN-t.webp (thumbnail for galleries); give its .md file. Numbering continues; cover.webp is made if missing
+blog    -> the article's photo folder (photos: or date in the front matter) assets/blog/<folder>/NN.webp + NN-t.webp (thumbnail for galleries); give its .md file.
 cooking -> assets/cooking/<name>-N.webp + <name>-N-t.webp (<name> is any label, e.g. 202601-a; numbering continues)
 Needs Pillow:  pip install pillow
 """
@@ -54,8 +54,6 @@ def main():
             fn = f'{n:02d}.webp'
             save(im, os.path.join(folder, fn), 1440, 82)
             save(im, os.path.join(folder, fn.replace('.webp', '-t.webp')), 480, 74)     # thumbnail for :::gallery
-            if not os.path.exists(os.path.join(folder, 'cover.webp')):
-                save(im, os.path.join(folder, 'cover.webp'), 800, 78)
             lines.append(f'![]({fn})')
             n += 1
     else:

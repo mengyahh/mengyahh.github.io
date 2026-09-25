@@ -13,8 +13,8 @@
 
 ```
 content/blog/            所有部落格文章（一篇一個 Markdown 檔，含從 Vocus、Strikingly、Instagram 搬來的）
-content/cooking/         新的料理紀錄（一則一個 Markdown 檔）；寫法見 content/README.md
-data/cooking.json        舊的料理紀錄（Google Site 搬來的：日期、標題、文字、照片）
+content/cooking/         所有料理紀錄（一則一個 Markdown 檔）；寫法見 content/README.md
+data/cooking.json        （已清空）料理紀錄全部改放在 content/cooking/
 data/about.json          關於頁內容（分區、標籤、個人資料）
 data/portfolio.json      作品集內容（分組、項目、圖片；影片只存 YouTube 代碼，頁面以本機封面圖顯示，按播放才載入）
 data/blog.json           （已清空）部落格文章全部改放在 content/blog/，一篇一個 Markdown 檔

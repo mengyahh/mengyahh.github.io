@@ -229,6 +229,28 @@ def render_gallery(raw, gid, folder, imgdir, name, default_alt):
     return f'<figure class="gallery-fig"><div class="gallery">{"".join(items)}</div>{cap}</figure>'
 
 
+def first_image_name(body):
+    """File name of the first photo written in an article body (Markdown photo line, gallery item or raw <img>)."""
+    best = None
+    for pat in (r'!\[[^\]]*\]\(([^)\s"]+)', r'src="@ASSET/blog/[^/"]+/([^"]+)"'):
+        m = re.search(pat, body)
+        if m and (best is None or m.start() < best[0]):
+            best = (m.start(), m.group(1))
+    return re.sub(r'-t(\.\w+)$', r'\1', best[1]) if best else None
+
+
+def cover_file(meta, body, imgdir):
+    """The article's cover photo: `cover:` in the front matter, else the first photo in the text."""
+    fn = meta.get('cover') or first_image_name(body)
+    if not fn and os.path.isfile(os.path.join(imgdir, 'cover.webp')):
+        fn = 'cover.webp'                                  # older articles without any photo in the text
+    return fn
+
+
+def thumb_name(fn):
+    return re.sub(r'\.(\w+)$', r'-t.\1', fn)
+
+
 def title_map(json_articles, md_metas):
     """article title (and its part before "：") -> slug"""
     t = {}
@@ -262,7 +284,7 @@ def blog_articles(json_articles):
         folder = meta.get('photos') or slug             # photo folder in assets/blog/ (stays put when the date is changed)
         imgdir = os.path.join(ROOT, 'assets', 'blog', folder)
         blocks, kw_lines = chunks(body)
-        parts, n, first, galleries = [], 0, None, 0
+        parts, n, galleries = [], 0, 0
         after_memo = False
         for kind, raw in blocks:
             if kind == 'img':
@@ -271,7 +293,6 @@ def blog_articles(json_articles):
                     raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{folder}/')
                 w, h = image_size(os.path.join(imgdir, fn))
                 n += 1
-                first = first or fn
                 alt = alt or cap or f'{meta["title"]}（照片 {n}）'
                 figcap = f'<figcaption><span class="cap">{html.escape(cap, quote=False)}</span></figcaption>' if cap else ''
                 parts.append(f'<figure><img src="@ASSET/blog/{folder}/{fn}" width="{w}" height="{h}" '
@@ -282,16 +303,21 @@ def blog_articles(json_articles):
             else:
                 parts.append(render_block(kind, raw, titles, after_memo=(kind == 'ul' and after_memo)))
             after_memo = kind == 'memo'
-        cover = None
-        cover_fn = meta.get('cover') or ('cover.webp' if os.path.isfile(os.path.join(imgdir, 'cover.webp')) else first)
+        cover = cover_thumb = None
+        cover_fn = cover_file(meta, body, imgdir)
         if cover_fn:
             if not os.path.isfile(os.path.join(imgdir, cover_fn)):
                 raise SystemExit(f'{name}: cover "{cover_fn}" not found in assets/blog/{folder}/')
             w, h = image_size(os.path.join(imgdir, cover_fn))
-            cover = {'src': f'blog/{folder}/{cover_fn}', 'w': w, 'h': h}
+            cover = cover_thumb = {'src': f'blog/{folder}/{cover_fn}', 'w': w, 'h': h}
+            tfn = thumb_name(cover_fn)
+            if os.path.isfile(os.path.join(imgdir, tfn)):        # small version for the article list, if there is one
+                tw, th = image_size(os.path.join(imgdir, tfn))
+                cover_thumb = {'src': f'blog/{folder}/{tfn}', 'w': tw, 'h': th}
         art = {'slug': slug, 'source': meta.get('source') or 'markdown', 'title': meta['title'], 'date': slug,
                'categories': as_list(meta['categories']), 'tags': as_list(meta.get('tags')), 'abstract': meta.get('summary', ''),
-               'keywords': as_list(meta.get('keywords')), 'kwlines': kw_lines, 'cover': cover, 'html': ''.join(parts)}
+               'keywords': as_list(meta.get('keywords')), 'kwlines': kw_lines, 'cover': cover, 'cover_thumb': cover_thumb,
+               'html': ''.join(parts)}
         if meta.get('date_label'):
             art['date_label'] = meta['date_label']
         if meta.get('paid', '').lower() in ('yes', 'true', '1'):
@@ -314,9 +340,10 @@ def cooking_entries():
     for meta, body, path in files:
         name = os.path.basename(path)
         day = meta.get('date', '')
-        m = re.fullmatch(r'(\d{4})-(\d{2})(-\d{2})?', day)
-        if not m:
-            raise SystemExit(f'{name}: date must look like 2025-07-12 (or 2025-07); got "{day}"')
+        m = re.fullmatch(r'(\d{4})-(\d{2})(-\d{2})?', day)          # 2025-07-12 or 2025-07
+        span = re.fullmatch(r'\d{4}(-\d{4})?', day)                     # 2022 (a whole year) or 2015-2019 (a range)
+        if not (m or span):
+            raise SystemExit(f'{name}: date must look like 2025-07-12, 2025-07, 2022 or 2015-2019; got "{day}"')
         if not meta.get('title'):
             raise SystemExit(f'{name}: front matter needs "title"')
         blocks, _ = chunks(body)
@@ -324,6 +351,7 @@ def cooking_entries():
         for kind, raw in blocks:
             if kind == 'img':
                 cap, fn, _title = IMG_LINE.match(raw).groups()
+                cap = cap or _title
                 p = os.path.join(ROOT, 'assets', 'cooking', fn)
                 if not os.path.isfile(p):
                     raise SystemExit(f'{name}: photo "{fn}" not found in assets/cooking/')
@@ -340,10 +368,15 @@ def cooking_entries():
                 out_blocks.append({'type': 'p', 'html': f'<strong>{inline(txt, titles)}</strong>'})
             elif kind in ('ul', 'ol'):
                 out_blocks.append({'type': 'ul', 'items': [inline(re.sub(r'^([-*]|\d+[.)]) ', '', l), titles) for l in raw.split('\n')]})
+            elif kind == 'html':                                     # a block written directly in HTML
+                if raw.startswith('<ul'):
+                    out_blocks.append({'type': 'ul', 'items': re.findall(r'<li>(.*?)</li>', raw, re.S)})
+                else:
+                    out_blocks.append({'type': 'p', 'html': re.sub(r'^<p[^>]*>|</p>$', '', raw)})
             else:
                 out_blocks.append({'type': 'p', 'html': inline(raw, titles)})
-        e = {'id': meta.get('id') or f'{m.group(1)}{m.group(2)}-{os.path.splitext(name)[0]}', 'source': 'markdown',
-             'date': m.group(1) + m.group(2), 'day': day, 'title': meta['title'], 'blocks': out_blocks, 'images': images}
+        e = {'id': meta.get('id') or (f'{m.group(1)}{m.group(2)}-{os.path.splitext(name)[0]}' if m else f'{day}-{os.path.splitext(name)[0]}'), 'source': 'markdown',
+             'date': day if span else m.group(1) + m.group(2), 'day': day, 'title': meta['title'], 'blocks': out_blocks, 'images': images}
         if meta.get('place'):
             e['place'] = meta['place']
         entries.append(e)
@@ -354,6 +387,8 @@ def merge_cooking(json_entries, md_entries):
     """Newest first. json entries only know their month, so a note from the same month goes before them."""
     def day_of(e):
         d = e.get('day') or e['date']
+        if len(d) == 4:
+            return d + '-00'                                   # a whole year ("各種其他") is listed last within that year
         return d + '-15' if len(d) == 7 else d
     merged = list(json_entries)
     for e in sorted(md_entries, key=day_of, reverse=True):
