@@ -443,13 +443,13 @@ def build_home(entries, articles):
     <h1 class="serif">萌芽中<span>。</span></h1>
   </div>
   <section class="home-sec">
+    <div class="sec-head"><h2 class="serif"><a href="blog/">部落格</a></h2><a class="sec-more" href="blog/">所有文章 →</a></div>
+    <ul class="latest">{posts}</ul>
+  </section>
+  <section class="home-sec">
     <div class="sec-head"><h2 class="serif"><a href="cooking/">料理紀錄</a></h2><a class="sec-more" href="cooking/">全部 →</a></div>
     <p class="sec-desc">煮過的東西、心得與照片。</p>
     <div class="thumbs">{thumbs}</div>
-  </section>
-  <section class="home-sec">
-    <div class="sec-head"><h2 class="serif"><a href="blog/">部落格</a></h2><a class="sec-more" href="blog/">所有文章 →</a></div>
-    <ul class="latest">{posts}</ul>
   </section>
   <div class="home-duo">
     <section class="home-sec">
