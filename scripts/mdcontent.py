@@ -13,11 +13,27 @@ import re
 import struct
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LANG = 'zh'                                   # set_lang(): 'zh' reads content/blog, 'en' / 'ja' read content/<lang>/blog
+LABELS = {'zh': {'memo': '備忘', 'photo': '{title}（照片 {n}）'},
+          'en': {'memo': 'Notes', 'photo': '{title} (photo {n})'},
+          'ja': {'memo': 'メモ', 'photo': '{title}（写真 {n}）'}}
+KW_MARK = r'\*\*(?:關鍵字|Keywords|キーワード)\*\*'      # the trailing keywords block (search only)
+MEMO_MARK = ('**備忘**', '**Notes**', '**メモ**')
 esc = lambda s: html.escape(s, quote=False)
 IMG_LINE = re.compile(r'^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)$')      # ![alt](file.webp "caption")
 
 
 # ------------------------------------------------------------------ reading files
+
+def set_lang(lang):
+    global LANG
+    LANG = lang
+
+
+def lang_dir(sub, lang=None):
+    lang = lang or LANG
+    return sub if lang == 'zh' else f'{lang}/{sub}'
+
 
 def split_front(text):
     text = text.replace('\r\n', '\n').lstrip('﻿')
@@ -39,7 +55,7 @@ def as_list(v):
 def read_dir(sub):
     """[(meta, body, path)] for every non-draft .md file in content/<sub>."""
     out = []
-    for path in sorted(glob.glob(os.path.join(ROOT, 'content', sub, '*.md'))):
+    for path in sorted(glob.glob(os.path.join(ROOT, 'content', lang_dir(sub), '*.md'))):
         name = os.path.basename(path)
         if name.startswith('_'):
             continue
@@ -49,6 +65,16 @@ def read_dir(sub):
             raise SystemExit(f'{name}: {e}')
         if meta.get('draft', '').lower() in ('yes', 'true', '1'):
             continue
+        if LANG != 'zh':
+            # a translation only carries title / summary / keywords / tags; date, categories, photos, cover... come from the
+            # Chinese file with the same name in content/<sub>/
+            zpath = os.path.join(ROOT, 'content', sub, name)
+            if not os.path.isfile(zpath):
+                raise SystemExit(f'{lang_dir(sub)}/{name}: no Chinese original content/{sub}/{name} (a translation must have the same file name)')
+            zmeta, _ = split_front(open(zpath, encoding='utf-8').read())
+            own = {k: v for k, v in meta.items() if v}
+            meta = {k: v for k, v in zmeta.items() if k not in ('title', 'summary', 'keywords', 'tags')}
+            meta.update(own)
         out.append((meta, body, path))
     return out
 
@@ -102,6 +128,11 @@ def sync_filenames():
         if not os.path.exists(new):
             os.rename(old, new)
             done.append((os.path.basename(old), os.path.basename(new)))
+            for lang in ('en', 'ja'):                        # translations keep the same file name as the original
+                told = old.replace(os.sep + 'content' + os.sep, os.sep + 'content' + os.sep + lang + os.sep)
+                tnew = new.replace(os.sep + 'content' + os.sep, os.sep + 'content' + os.sep + lang + os.sep)
+                if os.path.isfile(told) and not os.path.exists(tnew):
+                    os.rename(told, tnew)
     return done
 
 
@@ -123,7 +154,7 @@ def inline(s, titles):
 def chunks(body):
     """Body text -> (kind, raw text) blocks; the trailing 關鍵字 block is returned separately."""
     kw_lines = []
-    m = re.search(r'\n*\*\*關鍵字\*\*\s*\n+(.*)$', body, re.S)
+    m = re.search(r'\n*' + KW_MARK + r'\s*\n+(.*)$', body, re.S)
     if m:
         kw_lines = [l.strip() for l in m.group(1).strip().split('\n') if l.strip()]
         body = body[:m.start()]
@@ -151,7 +182,7 @@ def chunks(body):
             kind = 'html'                                            # a block written directly in HTML is kept as is
         elif re.match(r'^#{2,4} ', raw):
             kind = 'h'
-        elif raw == '**備忘**':
+        elif raw in MEMO_MARK:
             kind = 'memo'
         elif raw == '---':
             kind = 'hr'
@@ -173,7 +204,7 @@ def render_block(kind, raw, titles, after_memo=False):
         lvl = len(raw) - len(raw.lstrip('#'))
         return f'<h{lvl}>{inline(raw[lvl:].strip(), titles)}</h{lvl}>'
     if kind == 'memo':
-        return '<p class="memo-label">備忘</p>'
+        return f'<p class="memo-label">{LABELS[LANG]["memo"]}</p>'
     if kind == 'hr':
         return '<hr>'
     if kind == 'html':
@@ -305,7 +336,7 @@ def blog_articles(json_articles):
                     raise SystemExit(f'{name}: photo "{fn}" not found in assets/blog/{folder}/{hint}')
                 w, h = image_size(os.path.join(imgdir, fn))
                 n += 1
-                alt = alt or cap or f'{meta["title"]}（照片 {n}）'
+                alt = alt or cap or LABELS[LANG]['photo'].format(title=meta['title'], n=n)
                 figcap = f'<figcaption><span class="cap">{html.escape(cap, quote=False)}</span></figcaption>' if cap else ''
                 parts.append(f'<figure><img src="@ASSET/blog/{folder}/{fn}" width="{w}" height="{h}" '
                              f'alt="{html.escape(alt)}" loading="lazy" decoding="async">{figcap}</figure>')
@@ -376,7 +407,7 @@ def cooking_entries():
                     im['caption'] = cap
                 images.append(im)
             elif kind in ('h', 'memo'):
-                txt = '備忘' if kind == 'memo' else raw.lstrip('#').strip()
+                txt = LABELS[LANG]['memo'] if kind == 'memo' else raw.lstrip('#').strip()
                 out_blocks.append({'type': 'p', 'html': f'<strong>{inline(txt, titles)}</strong>'})
             elif kind in ('ul', 'ol'):
                 out_blocks.append({'type': 'ul', 'items': [inline(re.sub(r'^([-*]|\d+[.)]) ', '', l), titles) for l in raw.split('\n')]})

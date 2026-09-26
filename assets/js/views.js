@@ -6,7 +6,7 @@
             encodeURIComponent(location.pathname) + '.json';
   fetch(url).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
     if (d && d.count) {
-      el.textContent = '瀏覽 ' + d.count + ' 次';
+      el.textContent = (el.getAttribute('data-tpl') || '瀏覽 {n} 次').replace('{n}', d.count);
       el.hidden = false;
     }
   }).catch(function () {});

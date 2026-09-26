@@ -1,0 +1,86 @@
+{
+ "banner": {
+  "src": "img/banner.webp",
+  "w": 2000,
+  "h": 1500
+ },
+ "quote": {
+  "html": "Human time doesn't go in circles, it moves in a straight line.<br>That's why people can't be happy: happiness is the longing for repetition.",
+  "source": "Milan Kundera, The Unbearable Lightness of Being"
+ },
+ "sections": [
+  {
+   "id": "me",
+   "title": "About me",
+   "tags": [
+    "#sustainability",
+    "#balance",
+    "#breathing room"
+   ],
+   "blocks": [
+    {
+     "type": "p",
+     "html": "I'm Meng Ya."
+    },
+    {
+     "type": "ul",
+     "items": [
+      "I started cooking in 2014. I'm a free spirit who wants to try every cuisine, and I like digging into where ingredients come from and tasting things that are kind to the environment. Also a diehard fan of Italian pizza.",
+      "I started climbing in 2017. I used to work part-time at a climbing gym, and I was a rookie route setter.",
+      "I like unplanned outdoor activities and getting close to the land. I especially like birds, and I follow ecology issues. I once kept worms for two years to eat our kitchen scraps. I'm not great with plants: so far I've only managed to keep green onions and basil alive.",
+      "I like reading (though I've read less in recent years). Once I read, I end up thinking, and then I need to write. I still have way too many notes I never turned into articles.",
+      "I like learning, getting to know and understand all kinds of possibilities, and sorting through a complicated world to work out my own values.<br>Stay hungry, stay humble.",
+      "I care about all kinds of social issues, but I tend to feel powerless and keep my distance. I hope that through small everyday actions I can build up enough moral courage to stand up for the values I believe in, without fear."
+     ]
+    }
+   ]
+  },
+  {
+   "id": "work",
+   "title": "Work",
+   "tags": [
+    "#translating content",
+    "#cross-disciplinary",
+    "#digital integration"
+   ],
+   "blocks": [
+    {
+     "type": "p",
+     "html": "An unconventional freelancer of five years."
+    },
+    {
+     "type": "p",
+     "html": "I'm good at breaking problems down and researching them. I don't rush into making things: I first understand what's needed and find the real pain points, then decide what to make and how. If my knowledge and skills fit, I can offer a full service, from analysis to planning to production."
+    },
+    {
+     "type": "p",
+     "html": "Most of the organisations and projects I work with are about humanities and history, ecology and the environment, policy, or non-profits. The results take many forms: management systems, themed websites, event planning, handbooks, videos and more."
+    },
+    {
+     "type": "p",
+     "html": "You can see what I offer and the projects I've done at <a href=\"https://understory.mengyahh.com/en/\">Understory</a>, or <a href=\"mailto:mengyahh@gmail.com\">just write to me</a> for a chat."
+    }
+   ]
+  }
+ ],
+ "buttons": [
+  {
+   "label": "portfolio",
+   "href": "https://understory.mengyahh.com/en/about.html#projects"
+  },
+  {
+   "label": "cooking notes",
+   "href": "@SITE/cooking/"
+  }
+ ],
+ "profile": {
+  "img": {
+   "src": "about/profile.webp",
+   "w": 775,
+   "h": 755
+  },
+  "name": "萌芽 (Meng Ya)",
+  "bio": [],
+  "contact": "Contact: <a href=\"mailto:mengyahh@gmail.com\">mengyahh@gmail.com</a>"
+ }
+}

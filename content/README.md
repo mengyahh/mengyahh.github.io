@@ -127,6 +127,24 @@ python scripts/photo.py cooking 202601-a D:\照片\a.jpg
 
 執行後會印出要貼進 `.md` 的那幾行。
 
+## 英文版與日文版
+
+譯文放在 `content/en/`、`content/ja/`，網址是 `/en/`、`/ja/`：
+
+```
+content/en/blog/       部落格譯文（檔名跟 content/blog/ 裡的中文原檔「一模一樣」）
+content/en/cooking/    料理紀錄譯文（同上）
+content/en/about.json  關於頁（沒有這個檔就沿用中文版的）
+content/ja/...         日文版，結構相同
+```
+
+- 譯文檔的 front matter 只需要 `title`、`summary`、`keywords`（料理紀錄再加 `place`），日期、分類、封面、照片資料夾等全部從同名的中文檔繼承；正文照片行（`![](檔名.webp)`）直接照抄，圖說翻譯即可。
+- 沒有對應譯文的文章，就不會出現在英日文版，語言切換也只會出現在有譯文的頁面。
+- 英日文版不開留言；部落格、料理紀錄列表上方會提示「只翻譯了新的內容」並連到中文版。
+- 「延伸閱讀：〈某篇文章標題〉」要寫該篇**譯文**的完整標題，才會自動連結。
+- 網站文字（導覽、按鈕、頁尾）與分類名稱在 `scripts/build.py` 的 `STRINGS`、`CATEGORY_LABELS`。
+- 中文檔改日期時，`publish.py` 會連同英日文版的檔名一起改。
+
 ## 出錯時
 
 `preview.py` / `build.py` 會直接說是哪個檔案、哪裡有問題（例如日期格式不對、照片找不到）。

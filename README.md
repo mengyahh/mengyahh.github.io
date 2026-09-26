@@ -14,6 +14,7 @@
 ```
 content/blog/            所有部落格文章（一篇一個 Markdown 檔，含從 Vocus、Strikingly、Instagram 搬來的）
 content/cooking/         所有料理紀錄（一則一個 Markdown 檔）；寫法見 content/README.md
+content/en/ content/ja/  英文版、日文版的譯文（目前部落格與料理紀錄各翻最新 10 則）；作法見 content/README.md
 data/cooking.json        （已清空）料理紀錄全部改放在 content/cooking/
 data/about.json          關於頁內容（分區、標籤、個人資料）
 data/blog.json           （已清空）部落格文章全部改放在 content/blog/，一篇一個 Markdown 檔
