@@ -62,7 +62,7 @@ def section(sid, kicker, inner):
     return (f'<section class="block" id="{sid}">\n  <div class="wrap">\n    <p class="kicker">{M.esc(kicker)}</p>\n{inner}\n  </div>\n</section>\n')
 
 
-def r_hero(args, body):
+def r_hero(args, body, page_title):
     lines = body.strip().split('\n')
     eyebrow, rest = lines[0].strip(), '\n'.join(lines[1:])
     bl = M.blocks(rest)
@@ -71,8 +71,8 @@ def r_hero(args, body):
         raise SystemExit('content/work/about.md: ::: hero needs a "# heading" line')
     title = re.sub(r'\*\*(.+?)\*\*', r'<span class="ask">\1</span>', M.esc(M.heading_text(h1)))
     lede = ''.join(f'<p class="lede">{M.inline(r)}</p>' for k, r in bl if k == 'p')
-    return (f'<header class="hero" id="about">\n  <div class="wrap">\n    <p class="eyebrow">{M.esc(eyebrow)}</p>\n'
-            f'    <h1>{title}</h1>\n    {lede}\n  </div>\n</header>\n')
+    return (f'<header class="hero" id="about">\n  <div class="wrap">\n    <div class="page-head"><p class="eyebrow">{M.esc(eyebrow)}</p>\n'
+            f'    <h1>{M.esc(page_title)}</h1></div>\n    <p class="statement">{title}</p>\n    {lede}\n  </div>\n</header>\n')
 
 
 def r_skills(args, body):
@@ -214,7 +214,7 @@ def build_about():
     parts, contact = [], ''
     for typ, args, body in M.directives(text):
         if typ == 'hero':
-            parts.append(r_hero(args, body))
+            parts.append(r_hero(args, body, meta.get('title', '工作')))
         elif typ == 'contact':
             contact = contact_html(body, email)
             parts.append(contact)
@@ -325,8 +325,8 @@ def build_products(contact):
                 parts.append(r_callout(args, dbody))
             else:
                 raise SystemExit(f'content/work/products/{name}: unknown block "::: {typ}" (known: features, screens, note, callout)')
-        inner = (f'<section class="product">\n  <div class="wrap">\n    <p class="eyebrow">{M.esc(meta.get("eyebrow", ""))}</p>\n'
-                 f'    <h1>{M.inline(title)}</h1>\n{for_line}    <div class="prose">{intro}</div>\n{"".join(parts)}'
+        inner = (f'<section class="product">\n  <div class="wrap">\n    <div class="page-head"><p class="eyebrow">{M.esc(meta.get("eyebrow", ""))}</p>\n'
+                 f'    <h1>{M.inline(title)}</h1></div>\n{for_line}    <div class="prose">{intro}</div>\n{"".join(parts)}'
                  f'    <p class="back"><a href="/work/appsheet/">{BACK_APPSHEET}</a></p>\n  </div>\n</section>\n\n{contact}')
         shot = re.search(r'!\[[^\]]*\]\(([^)\s"]+)', body)
         pages.append({'path': f'work/appsheet/{slug}/index.html', 'url': f'/work/appsheet/{slug}/', 'title': f'{title} · {SITE_NAME}',
@@ -349,8 +349,8 @@ def build_overview(contact):
             parts.append(r_systems(args, dbody))
         else:
             raise SystemExit(f'content/work/appsheet.md: unknown block "::: {typ}" (known: points, systems)')
-    inner = (f'<section class="product">\n  <div class="wrap">\n    <p class="eyebrow">{M.esc(meta.get("eyebrow", "Products"))}</p>\n'
-             f'    <h1>{M.inline(meta.get("title", "AppSheet"))}</h1>\n    <div class="prose">{intro}</div>\n{"".join(parts)}'
+    inner = (f'<section class="product">\n  <div class="wrap">\n    <div class="page-head"><p class="eyebrow">{M.esc(meta.get("eyebrow", "Products"))}</p>\n'
+             f'    <h1>{M.inline(meta.get("title", "AppSheet"))}</h1></div>\n    <div class="prose">{intro}</div>\n{"".join(parts)}'
              f'  </div>\n</section>\n\n{contact}')
     return {'path': 'work/appsheet/index.html', 'url': '/work/appsheet/', 'title': f'{meta.get("title", "AppSheet")} · {SITE_NAME}',
             'desc': meta.get('description', ''), 'body': local_links(inner), 'depth': 2, 'css': ('work',), 'js': ()}
@@ -427,8 +427,8 @@ def build_portfolio(contact):
         if first:
             src = first.group(1)
             img = asset(f'portfolio/yt-{src[len("youtube:"):]}.webp') if src.startswith('youtube:') else asset(src)
-        inner = (f'<header class="hero">\n  <div class="wrap">\n    <p class="eyebrow"><a href="/work/#projects">作品集</a></p>\n'
-                 f'    <h1>{M.inline(title)}</h1>\n    <p class="lede">{M.esc(lab)}</p>\n  </div>\n</header>\n\n'
+        inner = (f'<header class="hero">\n  <div class="wrap">\n    <div class="page-head"><p class="eyebrow"><a href="/work/#projects">作品集</a></p>\n'
+                 f'    <h1>{M.inline(title)}</h1><p class="lede">{M.esc(lab)}</p></div>\n  </div>\n</header>\n\n'
                  f'<section class="pf">\n  <div class="wrap">\n    {rows_html}\n    <p class="back"><a href="/work/#projects">{BACK_PROJECTS}</a></p>\n  </div>\n</section>\n\n{contact}')
         pages.append({'path': f'work/portfolio/{slug}/index.html', 'url': f'/work/portfolio/{slug}/', 'title': f'{title} · {SITE_NAME}',
                       'desc': meta.get('description') or f'{title}：{lab}。', 'body': local_links(inner), 'depth': 3,
