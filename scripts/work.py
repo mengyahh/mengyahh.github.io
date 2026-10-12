@@ -24,7 +24,7 @@ MORE = '了解更多 →'
 BACK_APPSHEET = '← 回到 AppSheet 管理系統'      # goes back to /work/#appsheet
 BACK_PROJECTS = '← 回到做過的專案'
 COPY, COPIED, SELECTED = '複製 email', '已複製', '已選取，請按複製'
-PROJECTS_VISIBLE = 5                       # projects shown at first; the rest are behind "show all"
+PROJECTS_VISIBLE = None                    # None: show every project; a number: show that many and fold the rest behind "show more"
 PROJECTS_MORE = '看其餘 {n} 個專案'
 PAGE_NAV_LABEL = '頁內導覽'
 CONTACT_LABEL = '聯絡'
@@ -143,7 +143,7 @@ def r_projects(args, body):
             after = f'    <p class="after">{M.inline(raw)}</p>\n'
     def row(i):
         return f'      <li><span class="head"><span class="type">{M.inline(i["title"])}</span>{i["link"]}</span><span class="tags">{i["tags"]}</span></li>\n'
-    shown, rest = items[:PROJECTS_VISIBLE], items[PROJECTS_VISIBLE:]
+    shown, rest = (items, []) if PROJECTS_VISIBLE is None else (items[:PROJECTS_VISIBLE], items[PROJECTS_VISIBLE:])
     out = f'    <ul class="projects">\n{"".join(row(i) for i in shown)}    </ul>\n'
     if rest:
         out += (f'    <details class="more-info proj-more">\n      <summary>{PROJECTS_MORE.format(n=len(rest))}</summary>\n'

@@ -42,10 +42,6 @@ Work
 - AI：Claude、NotebookLM
 :::
 
-::: appsheet AppSheet
-（這一區的內容寫在 appsheet.md）
-:::
-
 ::: projects 專案類型
 ## 做過什麼樣的專案
 
@@ -110,6 +106,10 @@ Work
 
 - **了解需求與痛點**：先搞懂你怎麼做事，再談要做什麼，在目標和預算之間找到一個最佳答案！
 - **有一個人可以從頭做到尾**：調查、規劃、製作不用換手，不必對不同的人重複說明、交接重工。
+:::
+
+::: appsheet AppSheet
+（這一區的內容寫在 appsheet.md）
 :::
 
 ::: contact

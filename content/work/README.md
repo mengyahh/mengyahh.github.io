@@ -76,7 +76,7 @@ description: （選填）搜尋結果的簡介
 
 ## AppSheet 區塊 `content/work/appsheet.md`
 
-它**不是獨立的一頁**，而是 `/work/` 裡的「AppSheet」區塊（在 `about.md` 裡的 `::: appsheet` 那一行決定它出現在哪裡，目前在「能力」和「專案類型」之間）。舊網址 `/work/appsheet/` 會自動轉到 `/work/#appsheet`。
+它**不是獨立的一頁**，而是 `/work/` 裡的「AppSheet」區塊（在 `about.md` 裡的 `::: appsheet` 那一行決定它出現在哪裡，目前在「為什麼找我」和聯絡區之間，也就是內容的最後一塊）。舊網址 `/work/appsheet/` 會自動轉到 `/work/#appsheet`。
 
 ```
 ---
@@ -105,7 +105,7 @@ description: ...                  ← 沒有用到（搜尋結果的簡介用 ab
 
 作品卡片的內容（標題、適用對象、一句話介紹、順序）來自各作品頁最上面的 `title`、`for`、`summary`、`order`；桌機一排四張、平板兩張、手機左右滑動。
 
-「做過什麼樣的專案」預設只顯示前 5 個，其餘收在「看其餘 N 個專案」（數字在 `scripts/work.py` 的 `PROJECTS_VISIBLE`），所以 `about.md` 裡越重要的專案越要放前面。
+「做過什麼樣的專案」目前全部顯示。想收合的話，把 `scripts/work.py` 的 `PROJECTS_VISIBLE` 改成數字（例如 5），超過的會收在「看其餘 N 個專案」裡。
 
 頁面最上面的「能力｜AppSheet｜專案類型｜…」頁內導覽會依區塊自動產生，標籤就是各區塊 `:::` 後面的小標。
 
