@@ -5,7 +5,12 @@
 - `/` 首頁
 - `/cooking/` 料理紀錄（由舊 Google Site 搬過來）
 - `/blog/` 部落格（由 Vocus 與舊 Strikingly 部落格搬過來；每篇在 `/blog/YYYY-MM-DD/`）；列表頁右側欄有搜尋、系列、年份篩選
-- `/about/` 關於（作品集已搬到 Understory 網站：https://understory.mengyahh.com/about.html#projects ；舊網址 `/portfolio/…` 只留轉址頁）
+- `/about/` 關於
+- `/work/` 工作：做什麼、做過的專案、合作方式；導覽列「工作」的下拉選單有 AppSheet
+  - `/work/appsheet/` AppSheet 管理系統總覽（客製化開發與既有作品的卡片）
+  - `/work/appsheet/<名稱>/` 各個既有作品（內部請款、自由工作收支管理、個案管理、白肉雞養殖紀錄）
+  - `/work/portfolio/<名稱>/` 專案作品集頁（樂城生活節、島讀河溪）
+  - 舊網址 `/portfolio/…` 只留轉址頁，會轉到上面對應的頁面
 
 全站固定是淺色主題（米色底、深色字），不會跟著系統切換成深色。
 
@@ -14,6 +19,7 @@
 ```
 content/blog/            所有部落格文章（一篇一個 Markdown 檔，含從 Vocus、Strikingly、Instagram 搬來的）
 content/cooking/         所有料理紀錄（一則一個 Markdown 檔）；寫法見 content/README.md
+content/work/            「工作」區的內容（Markdown）：about.md、appsheet.md、products/*.md、portfolio/*.md；寫法見 content/work/README.md
 content/en/ content/ja/  英文版、日文版的譯文（目前部落格與料理紀錄各翻最新 10 則）；作法見 content/README.md
 data/cooking.json        （已清空）料理紀錄全部改放在 content/cooking/
 data/about.json          關於頁內容（分區、標籤、個人資料）
@@ -21,8 +27,10 @@ data/blog.json           （已清空）部落格文章全部改放在 content/b
 assets/blog/<日期>/      文章圖片（WebP，已去除 EXIF）
 assets/data/blog-search.json  站內搜尋用的索引（產生檔）
 assets/cooking/          照片（xxx.webp 大圖 1280px、xxx-t.webp 縮圖 640px，已去除 EXIF）
-assets/css, assets/js    樣式、輪播與燈箱
+assets/css, assets/js    樣式、輪播與燈箱（工作區的樣式在 assets/css/work.css）
+assets/work/             工作區的圖片：portfolio/（作品集）、screenshots/（各作品的 App 畫面）
 scripts/mdcontent.py     讀 content/ 的 Markdown
+scripts/work.py          產生「工作」區的頁面（用 scripts/mdlite.py 解析 content/work/ 的區塊語法）
 scripts/photo.py         縮圖、轉 WebP、去 EXIF，並印出要貼進 .md 的照片行
 scripts/preview.py       本機預覽（存檔自動重建）；preview.bat 是雙擊版
 publish.py               建置、commit、push 到線上；publish.bat 是雙擊版

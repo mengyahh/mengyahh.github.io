@@ -58,7 +58,7 @@
     },
     {
      "type": "p",
-     "html": "可以到 <a href=\"https://understory.mengyahh.com\">Understory</a> 看看具體的服務內容與我曾做過的專案，也歡迎<a href=\"mailto:mengyahh@gmail.com\">直接來信</a>聊聊。"
+     "html": "可以到<a href=\"/work/\">工作頁</a>看看具體的服務內容與我曾做過的專案，也歡迎<a href=\"mailto:mengyahh@gmail.com\">直接來信</a>聊聊。"
     }
    ]
   }
@@ -66,7 +66,7 @@
  "buttons": [
   {
    "label": "作品集 portfolio",
-   "href": "https://understory.mengyahh.com/about.html#projects"
+   "href": "/work/#projects"
   },
   {
    "label": "料理紀錄 cooking notes",

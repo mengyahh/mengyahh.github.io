@@ -17,13 +17,13 @@ from urllib.parse import quote
 from collections import OrderedDict
 
 import mdcontent
+import work
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://mengyahh.com'
 SITE_DESC = '萌芽的個人網站：料理紀錄、部落格文章與工作。'      # home page <meta description>
 EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
-WORK_URL = 'https://understory.mengyahh.com'      # the Understory site
 GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh.goatcounter.com (set GOATCOUNTER= to build without tracking)
 esc = html.escape
 AUTHOR = '萌芽'
@@ -72,7 +72,7 @@ STRINGS = {
         kw='關鍵字', post_nav='上一篇與下一篇', newer='較新的文章 →', older='← 較舊的文章', views='瀏覽 {n} 次',
         home_title='萌芽中。 · mengyahh', home_desc='萌芽的個人網站：料理紀錄、部落格文章與工作。',
         home_all_posts='所有文章 →', home_all='全部 →', home_cooking_desc='煮過的東西、心得與照片。',
-        home_more='看更多 →', home_about_desc='自我介紹與經歷。', home_go='前往 Understory ↗', home_work_desc='Understory：作品與接案品牌。',
+        home_more='看更多 →', home_about_desc='自我介紹與經歷。', home_go='看更多 →', home_work_desc='接案做過的專案、合作方式，以及 AppSheet 管理系統。', work_menu='展開工作選單',
         about_h1='關於', about_title='關於',
         about_desc='萌芽（Meng Ya）的自我介紹：接案 5 年的非典型自由工作者，擅長拆解問題與研究分析，提供從分析、規劃到製作的服務。',
         profile_alt='萌芽的照片'),
@@ -94,8 +94,9 @@ STRINGS = {
         kw='Keywords', post_nav='Previous and next posts', newer='Newer post →', older='← Older post', views='{n} views',
         home_title='Sprouting. · mengyahh', home_desc="Meng Ya's personal site: cooking notes, blog posts and work.",
         home_all_posts='All posts →', home_all='All →', home_cooking_desc="What I've cooked, thoughts and photos.",
-        home_more='Read more →', home_about_desc='Who I am and what I have done.', home_go='Go to Understory ↗',
-        home_work_desc='Understory: my portfolio and freelance brand.',
+        home_more='Read more →', home_about_desc='Who I am and what I have done.', home_go='Read more (in Chinese) →',
+        home_work_desc='Projects I have worked on, how we work together, and AppSheet systems. This section is in Chinese.',
+        work_menu='Open the Work menu',
         about_h1='About', about_title='About',
         about_desc='About Meng Ya: a freelancer of five years with an unconventional career, good at breaking problems down and researching, offering everything from analysis and planning to making.',
         profile_alt='Photo of Meng Ya'),
@@ -116,8 +117,9 @@ STRINGS = {
         kw='キーワード', post_nav='前後の記事', newer='新しい記事 →', older='← 古い記事', views='{n} 回閲覧',
         home_title='芽吹き中。 · mengyahh', home_desc='Meng Ya の個人サイト：料理記録、ブログ、仕事のこと。',
         home_all_posts='すべての記事 →', home_all='すべて →', home_cooking_desc='作ったもの、感想、写真。',
-        home_more='もっと見る →', home_about_desc='自己紹介と、これまでのこと。', home_go='Understory へ ↗',
-        home_work_desc='Understory：作品と受託のブランド。',
+        home_more='もっと見る →', home_about_desc='自己紹介と、これまでのこと。', home_go='もっと見る（中国語）→',
+        home_work_desc='これまでのプロジェクト、進め方、AppSheet 管理システム。このセクションは中国語です。',
+        work_menu='仕事メニューを開く',
         about_h1='プロフィール', about_title='プロフィール',
         about_desc='Meng Ya の自己紹介。フリーランス歴5年、問題を分解して調べて分析するのが得意で、分析・企画から制作までまるごと引き受けています。',
         profile_alt='Meng Ya の写真'),
@@ -168,18 +170,23 @@ def jsonld(*objs):
 def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=None, og_type='website',
            extra_head='', structured=(), alts=None):
     """Shared page shell. `base` is the relative prefix back to the site root ('', '../' or '../../')."""
+    work_href = f'{base}{UP}work/'
     nav = [
-        (S['nav_about'], f'{base}about/', 'about'),
-        (S['nav_work'], WORK_URL, 'work'),                        # goes straight to the Understory site
-        (S['nav_cooking'], f'{base}cooking/', 'cooking'),
-        (S['nav_blog'], f'{base}blog/', 'blog'),
+        (S['nav_about'], f'{base}about/', 'about', None),
+        (S['nav_work'], work_href, 'work', [('AppSheet', f'{base}{UP}work/appsheet/')]),
+        (S['nav_cooking'], f'{base}cooking/', 'cooking', None),
+        (S['nav_blog'], f'{base}blog/', 'blog', None),
     ]
     items = []
-    for label, href, key in nav:
-        ext = href.startswith('http')
+    for label, href, key, sub in nav:
         cur = ' aria-current="page"' if key == current else ''
-        rel = ' rel="noopener"' if ext else ''
-        items.append(f'<li><a href="{esc(href)}"{cur}{rel}>{label}{" ↗" if ext else ""}</a></li>')
+        if sub:
+            subs = ''.join(f'<li><a href="{esc(h)}">{esc(t)}</a></li>' for t, h in sub)
+            items.append(f'<li class="has-sub"><a href="{esc(href)}"{cur}>{label}</a>'
+                         f'<button type="button" class="sub-btn" aria-label="{esc(S["work_menu"])}" aria-expanded="false" aria-controls="sub-{key}"><span aria-hidden="true">▾</span></button>'
+                         f'<ul class="sub" id="sub-{key}">{subs}</ul></li>')
+        else:
+            items.append(f'<li><a href="{esc(href)}"{cur}>{label}</a></li>')
     alts = [l for l in (alts or LANGS)]
     if len(alts) > 1:
         items.append('<li class="langs" aria-label="Language">' + ' · '.join(
@@ -196,7 +203,7 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
           f'<meta name="twitter:image" content="{esc(og_image)}">')
     og += jsonld(*structured)
     styles = ''.join(f'<link rel="stylesheet" href="{base}{UP}assets/css/{c}.css">' for c in ('site',) + tuple(css))
-    scripts = ''.join(f'<script src="{base}{UP}assets/js/{j}.js" defer></script>' for j in tuple(js))
+    scripts = ''.join(f'<script src="{base}{UP}assets/js/{j}.js" defer></script>' for j in ('nav',) + tuple(js))
     fonts = FONTS.replace('&display=swap', FONTS_JA + '&display=swap') if LANG == 'ja' else FONTS
     analytics = ''
     stats_note = ''
@@ -581,7 +588,7 @@ def build_home(entries, articles):
       <p class="sec-desc">{S['home_about_desc']}</p>
     </section>
     <section class="home-sec">
-      <div class="sec-head"><h2 class="serif"><a href="{WORK_URL}" rel="noopener">{S['nav_work']}</a></h2><a class="sec-more" href="{WORK_URL}" rel="noopener">{S['home_go']}</a></div>
+      <div class="sec-head"><h2 class="serif"><a href="{UP}work/">{S['nav_work']}</a></h2><a class="sec-more" href="{UP}work/">{S['home_go']}</a></div>
       <p class="sec-desc">{S['home_work_desc']}</p>
     </section>
   </div>
@@ -640,30 +647,30 @@ def build_about(a):
                   og_image=f'{SITE}/assets/{a["profile"]["img"]["src"]}', alts=AVAILABLE)
 
 
-# The portfolio moved to the Understory site: these old addresses stay alive as redirects.
-UNDERSTORY = 'https://understory.mengyahh.com'
+# The portfolio now lives under /work/: the old addresses stay alive as redirects.
 MOVED = {
-    '/portfolio/': f'{UNDERSTORY}/about.html#projects',
-    '/portfolio/lecheng/': f'{UNDERSTORY}/portfolio/lecheng/',
-    '/portfolio/daodu-hexi/': f'{UNDERSTORY}/portfolio/daodu-hexi/',
+    '/portfolio/': '/work/#projects',
+    '/portfolio/lecheng/': '/work/portfolio/lecheng/',
+    '/portfolio/daodu-hexi/': '/work/portfolio/daodu-hexi/',
 }
 
 
 def build_redirect(target):
     t = esc(target)
-    return (f'<!doctype html>\n<html lang="zh-Hant">\n<head>\n<meta charset="utf-8">\n<title>已搬到 Understory</title>\n'
-            f'<link rel="canonical" href="{t}">\n<meta http-equiv="refresh" content="0; url={t}">\n'
+    return (f'<!doctype html>\n<html lang="zh-Hant">\n<head>\n<meta charset="utf-8">\n<title>作品集已搬到工作頁</title>\n'
+            f'<link rel="canonical" href="{SITE}{t}">\n<meta http-equiv="refresh" content="0; url={t}">\n'
             f'<meta name="viewport" content="width=device-width,initial-scale=1">\n</head>\n<body>\n'
-            f'<p>作品集已經搬到 Understory：<a href="{t}">{t}</a></p>\n</body>\n</html>\n')
+            f'<p>作品集已經搬到工作頁：<a href="{t}">{t}</a></p>\n</body>\n</html>\n')
 
 
-def build_sitemap(langdata):
+def build_sitemap(langdata, work_pages=()):
     urls = []
     for lang, (entries, articles) in langdata.items():
         pre = prefix(lang)
         urls += [(pre + '/', None), (pre + '/about/', None), (pre + '/cooking/', None),
                  (pre + '/blog/', articles[0]['date'] if articles else None)]
         urls += [(f'{pre}/blog/{a["slug"]}/', a['date']) for a in articles]
+    urls += [(p['url'], None) for p in work_pages]
     rows = ''.join(f'<url><loc>{SITE}{p}</loc>' + (f'<lastmod>{d}</lastmod>' if d else '') + '</url>' for p, d in urls)
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
             f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{rows}</urlset>\n')
@@ -722,10 +729,17 @@ if __name__ == '__main__':
         write(OUT + 'about/index.html', build_about(abouts[lang]))
         write('assets/data/' + search_file(), build_search_index(l_articles))
     set_lang('zh')
+    work_pages = work.build_all()
+    for wp in work_pages:
+        og = wp.get('og_image')
+        write(wp['path'], layout(base='../' * wp['depth'], title=wp['title'], desc=wp['desc'], path='/' + wp['path'].replace('index.html', ''),
+                                 body=wp['body'], current='work', css=wp['css'], js=wp['js'], alts=['zh'],
+                                 og_image=(SITE + og) if og else None), quiet=True)
+    print('wrote', len(work_pages), 'pages under /work/')
     for path, target in MOVED.items():
         write(path.strip('/') + '/index.html', build_redirect(target), quiet=True)
     print('wrote', len(MOVED), 'redirects for the moved portfolio')
-    write('sitemap.xml', build_sitemap(langdata))
+    write('sitemap.xml', build_sitemap(langdata, work_pages))
     write('robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')
     print('comments:', COMMENTS_API if COMMENTS_API and TURNSTILE_SITEKEY else 'off (COMMENTS_API / TURNSTILE_SITEKEY not set)')
     print('view counts:', f'GoatCounter "{GOATCOUNTER}"' if GOATCOUNTER else 'off (GOATCOUNTER not set)')
