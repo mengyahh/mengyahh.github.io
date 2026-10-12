@@ -13,6 +13,10 @@
   --shadow: 0 1px 2px rgba(38, 42, 33, 0.06), 0 8px 24px rgba(38, 42, 33, 0.06);
 }
 
+/* comfortable line length: ~46 characters for Chinese / Japanese (1em = one character); ~68 characters for English */
+:root { --measure: 46em; }
+html[lang="en"] { --measure: 68ch; }
+
 * { box-sizing: border-box; }
 html { background: var(--bg); scroll-behavior: smooth; }
 body {
