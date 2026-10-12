@@ -45,7 +45,7 @@ LANGS = ['zh', 'en', 'ja']
 LANG, UP, OUT = 'zh', '', ''          # current language; UP = "../" prefix from a language folder back to the site root; OUT = output folder
 HTML_LANG = {'zh': 'zh-Hant', 'en': 'en', 'ja': 'ja'}
 LOCALE = {'zh': 'zh_TW', 'en': 'en_US', 'ja': 'ja_JP'}
-LANG_NAME = {'zh': '中文', 'en': 'EN', 'ja': '日本語'}
+LANG_NAME = {'zh': '中文', 'en': 'English', 'ja': '日本語'}
 AUTHORS = {'zh': '萌芽', 'en': 'Meng Ya', 'ja': 'Meng Ya'}
 
 CATEGORY_LABELS = {
@@ -73,7 +73,7 @@ STRINGS = {
         home_title='萌芽中。 · mengyahh', home_desc='萌芽的個人網站：料理紀錄、部落格文章與工作。',
         home_all_posts='所有文章 →', home_all='全部 →', home_cooking_desc='煮過的東西、心得與照片。',
         home_more='看更多 →', home_about_desc='嘉義縣居住中，還在重新適應新生活。<br>2025/6-2026/6在日本打工度假，正在努力補寫紀錄中。', home_go='看更多 →',
-        home_work_desc='接案 5 年的非典型自由工作者。如果只看最終產出，往往搞不懂我的專業是什麼，看上去像是打雜。<br>我提供的服務是顧問、陪伴也是執行，我會先了解需求、看見痛點，再討論做什麼、怎麼做，提供一條龍的「分析→規劃→製作」服務。', work_menu='展開工作選單',
+        home_work_desc='接案 5 年的非典型自由工作者。如果只看最終產出，往往搞不懂我的專業是什麼，看上去像是打雜。<br>我提供的服務是顧問、陪伴也是執行，我會先了解需求、看見痛點，再討論做什麼、怎麼做，提供一條龍的「分析→規劃→製作」服務。', work_menu='展開工作選單', lang_menu='語言',
         about_h1='關於', about_title='關於',
         about_desc='萌芽（Meng Ya）的自我介紹：接案 5 年的非典型自由工作者，擅長拆解問題與研究分析，提供從分析、規劃到製作的服務。',
         profile_alt='萌芽的照片'),
@@ -98,7 +98,7 @@ STRINGS = {
         home_more='Read more →', home_go='Read more (in Chinese) →',
         home_about_desc="Living in Chiayi County, still adjusting to my new life.<br>I spent June 2025 to June 2026 on a working holiday in Japan, and I'm working hard to catch up on writing it all down.",
         home_work_desc="A freelancer of five years with an unconventional career. If you only look at the final output, it's often hard to tell what my expertise actually is, and it can look like I just do odd jobs.<br>What I offer is part consultant, part companion, and also the doing: I first understand what you need and find the real pain points, then we talk through what to make and how, in a one-stop service of “analysis → planning → making”.",
-        work_menu='Open the Work menu',
+        work_menu='Open the Work menu', lang_menu='Language',
         about_h1='About', about_title='About',
         about_desc='About Meng Ya: a freelancer of five years with an unconventional career, good at breaking problems down and researching, offering everything from analysis and planning to making.',
         profile_alt='Photo of Meng Ya'),
@@ -122,7 +122,7 @@ STRINGS = {
         home_more='もっと見る →', home_go='もっと見る（中国語）→',
         home_about_desc='嘉義県に住んでいます。新しい暮らしに、まだ慣れている途中です。<br>2025年6月〜2026年6月は日本でワーキングホリデー。いま、その記録を一生懸命書き足しています。',
         home_work_desc='フリーランス歴5年の、ちょっと変わった働き方をしています。最終的な成果物だけを見ると、私の専門が何なのかわかりにくくて、なんでも屋に見えるかもしれません。<br>私の仕事は、コンサルタントであり、伴走者であり、実行役でもあります。まず必要なことを理解して、本当の困りごとを見つけてから、何をどう作るかを話し合い、「分析→企画→制作」をまるごとお引き受けします。',
-        work_menu='仕事メニューを開く',
+        work_menu='仕事メニューを開く', lang_menu='言語',
         about_h1='プロフィール', about_title='プロフィール',
         about_desc='Meng Ya の自己紹介。フリーランス歴5年、問題を分解して調べて分析するのが得意で、分析・企画から制作までまるごと引き受けています。',
         profile_alt='Meng Ya の写真'),
@@ -192,9 +192,15 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
             items.append(f'<li><a href="{esc(href)}"{cur}>{label}</a></li>')
     alts = [l for l in (alts or LANGS)]
     if len(alts) > 1:
-        items.append('<li class="langs" aria-label="Language">' + ' · '.join(
-            f'<a href="{prefix(l)}{path}" hreflang="{HTML_LANG[l]}" lang="{HTML_LANG[l]}"' + (' aria-current="true"' if l == LANG else '') + f'>{LANG_NAME[l]}</a>'
-            for l in alts) + '</li>')
+        lang_items = ''.join(
+            f'<li><a href="{prefix(l)}{path}" hreflang="{HTML_LANG[l]}" lang="{HTML_LANG[l]}"' + (' aria-current="true"' if l == LANG else '') + f'>{LANG_NAME[l]}</a></li>'
+            for l in alts)
+        globe = ('<svg class="globe" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" '
+                 'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/>'
+                 '<path d="M12 2.5c2.8 2.6 4.2 5.8 4.2 9.5s-1.4 6.9-4.2 9.5c-2.8-2.6-4.2-5.8-4.2-9.5S9.2 5.1 12 2.5z"/></svg>')
+        items.append(f'<li class="has-sub langs-menu"><button type="button" class="sub-btn lang-btn" aria-expanded="false" aria-controls="sub-lang" '
+                     f'aria-label="{esc(S["lang_menu"])}: {esc(LANG_NAME[LANG])}">{globe}<span>{LANG_NAME[LANG]}</span><span class="caret" aria-hidden="true">▾</span></button>'
+                     f'<ul class="sub" id="sub-lang">{lang_items}</ul></li>')
     hreflang = ''.join(f'<link rel="alternate" hreflang="{HTML_LANG[l]}" href="{SITE}{prefix(l)}{path}">' for l in alts) if len(alts) > 1 else ''
     if hreflang:
         hreflang += f'<link rel="alternate" hreflang="x-default" href="{SITE}{path}">'
