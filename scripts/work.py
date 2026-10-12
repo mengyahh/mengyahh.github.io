@@ -21,9 +21,13 @@ SITE_NAME = '萌芽中。'
 ASSETS = '/assets/work/'
 FOR = '適用對象：'
 MORE = '了解更多 →'
-BACK_APPSHEET = '← 回到 AppSheet 管理系統'
+BACK_APPSHEET = '← 回到 AppSheet 管理系統'      # goes back to /work/#appsheet
 BACK_PROJECTS = '← 回到做過的專案'
 COPY, COPIED, SELECTED = '複製 email', '已複製', '已選取，請按複製'
+PROJECTS_VISIBLE = 5                       # projects shown at first; the rest are behind "show all"
+PROJECTS_MORE = '看其餘 {n} 個專案'
+PAGE_NAV_LABEL = '頁內導覽'
+CONTACT_LABEL = '聯絡'
 
 COPY_JS = '''<script>
 (function () {
@@ -137,8 +141,14 @@ def r_projects(args, body):
             cur['tags'] = ''.join(f'<span>{M.inline(x.strip())}</span>' for x in re.split(r'[、,，]\s*', raw.replace('\n', '')) if x.strip())
         elif state == 'after' and kind == 'p':
             after = f'    <p class="after">{M.inline(raw)}</p>\n'
-    lis = ''.join(f'      <li><span class="head"><span class="type">{M.inline(i["title"])}</span>{i["link"]}</span><span class="tags">{i["tags"]}</span></li>\n' for i in items)
-    return h2 + intro + f'    <ul class="projects">\n{lis}    </ul>\n' + after
+    def row(i):
+        return f'      <li><span class="head"><span class="type">{M.inline(i["title"])}</span>{i["link"]}</span><span class="tags">{i["tags"]}</span></li>\n'
+    shown, rest = items[:PROJECTS_VISIBLE], items[PROJECTS_VISIBLE:]
+    out = f'    <ul class="projects">\n{"".join(row(i) for i in shown)}    </ul>\n'
+    if rest:
+        out += (f'    <details class="more-info proj-more">\n      <summary>{PROJECTS_MORE.format(n=len(rest))}</summary>\n'
+                f'      <ul class="projects">\n{"".join(row(i) for i in rest)}      </ul>\n    </details>\n')
+    return h2 + intro + out + after
 
 
 def r_process(args, body):
@@ -211,17 +221,26 @@ def build_about():
     """-> (page dict, contact section html)"""
     meta, text = read('about.md')
     email = meta.get('email', 'mengyahh@gmail.com')
-    parts, contact = [], ''
+    parts, contact, nav = [], '', []
     for typ, args, body in M.directives(text):
         if typ == 'hero':
             parts.append(r_hero(args, body, meta.get('title', '工作')))
         elif typ == 'contact':
             contact = contact_html(body, email)
             parts.append(contact)
+            nav.append(('contact', CONTACT_LABEL))
+        elif typ == 'appsheet':
+            parts.append(section('appsheet', args or 'AppSheet', render_appsheet()))
+            nav.append(('appsheet', args or 'AppSheet'))
         elif typ in BLOCKS:
             parts.append(section(typ, args or typ, BLOCKS[typ](args, body)))
+            if typ != 'name':
+                nav.append((typ, args or typ))
         else:
-            raise SystemExit(f'content/work/about.md: unknown block "::: {typ}" (known: hero, skills, projects, process, why, name, contact)')
+            raise SystemExit(f'content/work/about.md: unknown block "::: {typ}" (known: hero, skills, appsheet, projects, process, why, name, contact)')
+    if nav and parts:
+        links = ''.join(f'<a href="#{i}">{M.esc(t)}</a>' for i, t in nav)
+        parts.insert(1, f'<nav class="page-nav" aria-label="{PAGE_NAV_LABEL}"><div class="wrap">{links}</div></nav>\n')
     page = {'path': 'work/index.html', 'url': '/work/', 'title': f'{meta.get("title", "工作")} · {SITE_NAME}',
             'desc': meta.get('description', ''), 'body': local_links('\n'.join(parts)), 'depth': 1, 'css': ('work',), 'js': ()}
     return page, contact
@@ -327,7 +346,7 @@ def build_products(contact):
                 raise SystemExit(f'content/work/products/{name}: unknown block "::: {typ}" (known: features, screens, note, callout)')
         inner = (f'<section class="product">\n  <div class="wrap">\n    <div class="page-head"><p class="eyebrow">{M.esc(meta.get("eyebrow", ""))}</p>\n'
                  f'    <h1>{M.inline(title)}</h1></div>\n{for_line}    <div class="prose">{intro}</div>\n{"".join(parts)}'
-                 f'    <p class="back"><a href="/work/appsheet/">{BACK_APPSHEET}</a></p>\n  </div>\n</section>\n\n{contact}')
+                 f'    <p class="back"><a href="/work/#appsheet">{BACK_APPSHEET}</a></p>\n  </div>\n</section>\n\n{contact}')
         shot = re.search(r'!\[[^\]]*\]\(([^)\s"]+)', body)
         pages.append({'path': f'work/appsheet/{slug}/index.html', 'url': f'/work/appsheet/{slug}/', 'title': f'{title} · {SITE_NAME}',
                       'desc': meta.get('description') or title, 'body': local_links(inner), 'depth': 3, 'css': ('work',), 'js': (),
@@ -335,25 +354,37 @@ def build_products(contact):
     return pages
 
 
-def build_overview(contact):
+def render_appsheet():
+    """The AppSheet section of /work/, written in content/work/appsheet.md:
+    intro, a button, ::: offers (cards), ::: systems (one card per work), ::: details (folded lists)."""
     meta, body = read('appsheet.md')
     first = body.find(':::')
     intro_text, rest = (body, '') if first < 0 else (body[:first], body[first:])
     intro = ''.join(f'<p>{M.inline(r)}</p>' for k, r in M.blocks(intro_text) if k == 'p')
-    parts = []
+    out = [f'    <h2>{M.inline(meta.get("title", "AppSheet"))}</h2>\n    <div class="prose">{intro}</div>\n'
+           f'    <p class="cta-line"><a class="cta-btn" href="#contact">{M.esc(meta.get("cta", "來信申請試用"))}</a></p>\n']
+    folded = []
     for typ, args, dbody in M.directives(rest):
-        if typ == 'points':
-            lis = ''.join(f'      <li>{M.inline(i)}</li>\n' for i in M.list_items(dbody.strip()))
-            parts.append(f'    <h3 class="points-title">{M.inline(args)}</h3>\n    <ul class="points">\n{lis}    </ul>\n')
+        if typ == 'offers':
+            cards, notes = '', ''
+            for kind, raw in M.blocks(dbody):
+                if kind == 'ul':
+                    for item in M.list_items(raw):
+                        m = re.match(r'^\*\*(.+?)\*\*\s*(.*)$', item)
+                        label, text = (m.group(1).rstrip('：:'), m.group(2)) if m else (item, '')
+                        cards += f'      <div class="offer"><h4>{M.inline(label)}</h4><p>{M.inline(text)}</p></div>\n'
+                elif kind == 'p':
+                    notes += f'    <p class="offer-note">{M.inline(raw)}</p>\n'
+            out.append(f'    <h3 class="points-title">{M.inline(args)}</h3>\n    <div class="offers">\n{cards}    </div>\n{notes}')
         elif typ == 'systems':
-            parts.append(r_systems(args, dbody))
+            lead = ''.join(f'    <p class="lede">{M.inline(raw)}</p>\n' for kind, raw in M.blocks(dbody) if kind == 'p')
+            out.append(f'    <h3 class="points-title">{M.inline(args)}</h3>\n{lead}{work_cards()}')
+        elif typ == 'details':
+            lis = ''.join(f'        <li>{M.inline(i)}</li>\n' for kind, raw in M.blocks(dbody) if kind == 'ul' for i in M.list_items(raw))
+            folded.append(f'    <details class="more-info">\n      <summary>{M.inline(args)}</summary>\n      <ul class="points">\n{lis}      </ul>\n    </details>\n')
         else:
-            raise SystemExit(f'content/work/appsheet.md: unknown block "::: {typ}" (known: points, systems)')
-    inner = (f'<section class="product">\n  <div class="wrap">\n    <div class="page-head"><p class="eyebrow">{M.esc(meta.get("eyebrow", "Products"))}</p>\n'
-             f'    <h1>{M.inline(meta.get("title", "AppSheet"))}</h1></div>\n    <div class="prose">{intro}</div>\n{"".join(parts)}'
-             f'  </div>\n</section>\n\n{contact}')
-    return {'path': 'work/appsheet/index.html', 'url': '/work/appsheet/', 'title': f'{meta.get("title", "AppSheet")} · {SITE_NAME}',
-            'desc': meta.get('description', ''), 'body': local_links(inner), 'depth': 2, 'css': ('work',), 'js': ()}
+            raise SystemExit(f'content/work/appsheet.md: unknown block "::: {typ}" (known: offers, systems, details)')
+    return ''.join(out) + ''.join(folded)
 
 
 # ------------------------------------------------------------------ portfolio/<slug>.md
@@ -439,7 +470,7 @@ def build_portfolio(contact):
 def build_all():
     """-> [page dict]; every page carries its path, url, title, desc, body (already wrapped in <div class="work">), depth, css, js."""
     about, contact = build_about()
-    pages = [about, build_overview(contact)] + build_products(contact) + build_portfolio(contact)
+    pages = [about] + build_products(contact) + build_portfolio(contact)
     for p in pages:
         copy_js = COPY_JS if 'id="copy"' in p['body'] else ''
         p['body'] = f'<div class="work">\n{p["body"]}\n</div>\n{copy_js}'

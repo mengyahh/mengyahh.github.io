@@ -2,7 +2,7 @@
 
 ```
 content/work/about.md                 工作頁 /work/（做什麼、做過的專案、合作方式、聯絡）
-content/work/appsheet.md              AppSheet 總覽頁 /work/appsheet/：介紹、誰適合、提供的方式；底下的作品卡片自動產生
+content/work/appsheet.md              /work/ 裡的 AppSheet 區塊：介紹、提供的方式、既有作品卡片（自動產生）、收合的說明
 content/work/products/invoice.md      作品頁：內部請款系統
 content/work/products/freelance.md    作品頁：自由工作收支管理系統
 content/work/products/case.md         作品頁：個案管理系統
@@ -74,9 +74,40 @@ description: （選填）搜尋結果的簡介
 - 新增一個作品頁：複製一個現有的 `.md` 改內容，檔名取新的網址名稱；記得到 `about.md` 的專案列表加上連結。
 - 想暫時不發布：檔名前面加 `_`。
 
-## AppSheet 總覽頁 `content/work/appsheet.md`
+## AppSheet 區塊 `content/work/appsheet.md`
 
-網址是 `mengyahh.com/work/appsheet/`，導覽列「工作」的下拉選單「AppSheet」點下去就是這一頁：最上面是 AppSheet 客製化開發的介紹（`::: points 標題` 是條列），最後的 `::: systems 既有作品` 會**自動**列出 `content/products/` 裡每一個作品：標題、適用對象、一句話介紹（見下面的 `title`、`for`、`summary`、`order`），新增作品頁就會多一項，每個作品的露出方式都一樣。
+它**不是獨立的一頁**，而是 `/work/` 裡的「AppSheet」區塊（在 `about.md` 裡的 `::: appsheet` 那一行決定它出現在哪裡，目前在「能力」和「專案類型」之間）。舊網址 `/work/appsheet/` 會自動轉到 `/work/#appsheet`。
+
+```
+---
+title: AppSheet 管理系統          ← 區塊標題
+cta: 來信申請試用                 ← 標題下方那顆按鈕的文字（連到頁面最下面的聯絡區）
+description: ...                  ← 沒有用到（搜尋結果的簡介用 about.md 的）
+---
+
+開頭一兩段介紹。
+
+::: offers 我如何提供服務？       ← 條列會變成並排的卡片（每項 **標題：** 後面接說明）
+- **完全客製化製作：**說明
+- **購買既有作品：**說明
+
+**保固服務：**…                  ← 卡片下面的一行補充（一般段落）
+:::
+
+::: systems 既有作品              ← 底下自動列出 content/work/products/ 裡的每個作品卡片
+這一行是卡片上方的說明文字。
+:::
+
+::: details 誰適合使用 AppSheet 製作的系統？   ← 預設收合，點了才展開（條列）
+- ...
+:::
+```
+
+作品卡片的內容（標題、適用對象、一句話介紹、順序）來自各作品頁最上面的 `title`、`for`、`summary`、`order`；桌機一排四張、平板兩張、手機左右滑動。
+
+「做過什麼樣的專案」預設只顯示前 5 個，其餘收在「看其餘 N 個專案」（數字在 `scripts/work.py` 的 `PROJECTS_VISIBLE`），所以 `about.md` 裡越重要的專案越要放前面。
+
+頁面最上面的「能力｜AppSheet｜專案類型｜…」頁內導覽會依區塊自動產生，標籤就是各區塊 `:::` 後面的小標。
 
 ## 產品頁 `content/work/products/<網址名稱>.md`
 

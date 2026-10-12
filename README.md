@@ -7,7 +7,7 @@
 - `/blog/` 部落格（由 Vocus 與舊 Strikingly 部落格搬過來；每篇在 `/blog/YYYY-MM-DD/`）；列表頁右側欄有搜尋、系列、年份篩選
 - `/about/` 關於
 - `/work/` 工作：做什麼、做過的專案、合作方式；導覽列「工作」的下拉選單有 AppSheet
-  - `/work/appsheet/` AppSheet 管理系統總覽（客製化開發與既有作品的卡片）
+  - AppSheet 管理系統的介紹與四個既有作品的卡片是 `/work/` 裡的一個區塊（`/work/#appsheet`）；舊網址 `/work/appsheet/` 會轉過去
   - `/work/appsheet/<名稱>/` 各個既有作品（內部請款、自由工作收支管理、個案管理、白肉雞養殖紀錄）
   - `/work/portfolio/<名稱>/` 專案作品集頁（樂城生活節、島讀河溪）
   - 舊網址 `/portfolio/…` 只留轉址頁，會轉到上面對應的頁面

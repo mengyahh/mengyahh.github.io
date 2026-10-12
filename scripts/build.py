@@ -176,7 +176,7 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
     work_href = f'{base}{UP}work/'
     nav = [
         (S['nav_about'], f'{base}about/', 'about', None),
-        (S['nav_work'], work_href, 'work', [('AppSheet', f'{base}{UP}work/appsheet/')]),
+        (S['nav_work'], work_href, 'work', None),
         (S['nav_cooking'], f'{base}cooking/', 'cooking', None),
         (S['nav_blog'], f'{base}blog/', 'blog', None),
     ]
@@ -661,15 +661,18 @@ MOVED = {
     '/portfolio/': '/work/#projects',
     '/portfolio/lecheng/': '/work/portfolio/lecheng/',
     '/portfolio/daodu-hexi/': '/work/portfolio/daodu-hexi/',
+    '/work/appsheet/': '/work/#appsheet',          # the AppSheet overview is a section of /work/ now
 }
 
 
 def build_redirect(target):
     t = esc(target)
-    return (f'<!doctype html>\n<html lang="zh-Hant">\n<head>\n<meta charset="utf-8">\n<title>作品集已搬到工作頁</title>\n'
-            f'<link rel="canonical" href="{SITE}{t}">\n<meta http-equiv="refresh" content="0; url={t}">\n'
+    canonical = SITE + (target.split('#')[0] or '/')
+    return (f'<!doctype html>\n<html lang="zh-Hant">\n<head>\n<meta charset="utf-8">\n<title>已搬到工作頁</title>\n'
+            f'<meta name="robots" content="noindex">\n'
+            f'<link rel="canonical" href="{esc(canonical)}">\n<meta http-equiv="refresh" content="0; url={t}">\n'
             f'<meta name="viewport" content="width=device-width,initial-scale=1">\n</head>\n<body>\n'
-            f'<p>作品集已經搬到工作頁：<a href="{t}">{t}</a></p>\n</body>\n</html>\n')
+            f'<p>這個頁面已經搬到工作頁：<a href="{t}">{t}</a></p>\n</body>\n</html>\n')
 
 
 def build_sitemap(langdata, work_pages=()):

@@ -42,6 +42,10 @@ Work
 - AI：Claude、NotebookLM
 :::
 
+::: appsheet AppSheet
+（這一區的內容寫在 appsheet.md）
+:::
+
 ::: projects 專案類型
 ## 做過什麼樣的專案
 
