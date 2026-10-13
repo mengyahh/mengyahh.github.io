@@ -750,6 +750,9 @@ if __name__ == '__main__':
                 svc = ({'@context': 'https://schema.org', '@type': 'Service', 'name': wp['service'], 'description': wp['desc'],
                         'serviceType': 'AppSheet custom application development', 'inLanguage': HTML_LANG[lang], 'url': SITE + wp['url'],
                         'provider': {'@type': 'Person', 'name': AUTHORS[lang], 'url': SITE + prefix(lang) + '/'}},)
+            if wp.get('faq'):
+                svc += ({'@context': 'https://schema.org', '@type': 'FAQPage', 'inLanguage': HTML_LANG[lang],
+                         'mainEntity': [{'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in wp['faq']]},)
             write(wp['path'], layout(base='../' * wp['depth'], title=wp['title'], desc=wp['desc'], path=wp['lpath'],
                                      body=wp['body'], current=None if wp.get('slim') else 'work', css=wp['css'], js=wp['js'], alts=have,
                                      og_image=(SITE + og) if og else None, slim=bool(wp.get('slim')), structured=svc), quiet=True)

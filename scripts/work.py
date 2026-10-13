@@ -409,7 +409,7 @@ def build_appsheet_page(contact):
              f'    <h1>{M.esc(title)}</h1></div>\n    <p class="statement">{headline}</p>\n    {lede}\n'
              f'    <p class="cta-line"><a class="cta-btn" href="#contact">{cta}</a></p>\n  </div>\n</header>\n']
     labels = [x.strip() for x in pm.get('nav', '').split('|') if x.strip()]
-    ids = ['services', 'works', 'fit', 'what', 'about', 'contact']
+    ids = ['services', 'works', 'fit', 'what', 'faq', 'about', 'contact']
     sections, n = [], 0
 
     def add(sid, inner):
@@ -438,61 +438,48 @@ def build_appsheet_page(contact):
         elif typ == 'details':
             lis = ''.join(f'      <li>{M.inline(i)}</li>\n' for kind, raw in M.blocks(dbody) if kind == 'ul' for i in M.list_items(raw))
             add(folded_ids.pop(0), head + f'    <ul class="points">\n{lis}    </ul>\n')
-    # about the maker
+    faq_list = []
     for typ, args, dbody in M.directives(ptext):
-        if typ != 'about':
-            continue
-        paras = ''.join(f'      <p>{M.inline(raw)}</p>\n' for kind, raw in M.blocks(dbody) if kind == 'p' and not raw.startswith('=>'))
-        link = ''
-        for kind, raw in M.blocks(dbody):
-            lm = re.match(r'=>\s*\[([^\]]+)\]\(([^)\s]+)\)', raw)
-            if lm:
-                link = f'      <p class="maker-link"><a class="cta-btn secondary" href="{lm.group(2)}">{M.esc(lm.group(1))}</a></p>\n'
-        photo = ''
-        if pm.get('photo'):
-            w, h = M.image_size(os.path.join(ROOT, 'assets', pm['photo']))
-            photo = f'    <img class="maker-photo" src="/assets/{pm["photo"]}" width="{w}" height="{h}" alt="" loading="lazy" decoding="async">\n'
-        add('about', f'    <h2>{M.inline(args)}</h2>\n    <div class="maker">\n{photo}      <div class="maker-text">\n{paras}{link}      </div>\n    </div>\n')
+        if typ == 'faq':
+            items, cur = [], None
+            for kind, raw in M.blocks(dbody):
+                if kind == 'h3':
+                    cur = {'q': M.heading_text(raw), 'a': ''}
+                    items.append(cur)
+                elif kind == 'p' and cur is not None:
+                    cur['a'] = (cur['a'] + ' ' + raw).strip()
+            html_items = ''.join(f'      <div class="faq-item"><h3>{M.inline(i["q"])}</h3><p>{M.inline(i["a"])}</p></div>\n' for i in items)
+            add('faq', f'    <h2>{M.inline(args)}</h2>\n    <div class="faq">\n{html_items}    </div>\n')
+            faq_list = [(i['q'], re.sub(r'\[([^\]]+)\]\([^)]*\)', r'\1', i['a']).replace('**', '')) for i in items]
+        elif typ == 'about':
+            paras = ''.join(f'      <p>{M.inline(raw)}</p>\n' for kind, raw in M.blocks(dbody) if kind == 'p' and not raw.startswith('=>'))
+            link = ''
+            for kind, raw in M.blocks(dbody):
+                lm = re.match(r'=>\s*\[([^\]]+)\]\(([^)\s]+)\)', raw)
+                if lm:
+                    link = f'      <p class="maker-link"><a class="cta-btn secondary" href="{lm.group(2)}">{M.esc(lm.group(1))}</a></p>\n'
+            photo = ''
+            if pm.get('photo'):
+                w, h = M.image_size(os.path.join(ROOT, 'assets', pm['photo']))
+                photo = f'    <img class="maker-photo" src="/assets/{pm["photo"]}" width="{w}" height="{h}" alt="" loading="lazy" decoding="async">\n'
+            add('about', f'    <h2>{M.inline(args)}</h2>\n    <div class="maker">\n{photo}      <div class="maker-text">\n{paras}{link}      </div>\n    </div>\n')
     parts.append(contact)
     sections.append(('contact', labels[-1] if len(labels) == len(ids) else S['contact']))
     nav_html = ''.join(f'<a href="#{i}">{M.esc(t)}</a>' for i, t in sections)
     parts.insert(1, f'<nav class="page-nav" aria-label="{S["page_nav"]}"><div class="wrap">{nav_html}</div></nav>\n')
-    return {'path': f'{LANGDIR}appsheet/index.html', 'url': f'{P}/appsheet/', 'lpath': '/appsheet/', 'title': title,
+    return {'path': f'{LANGDIR}appsheet/index.html', 'url': f'{P}/appsheet/', 'lpath': '/appsheet/', 'title': pm.get('seo_title') or title,
             'desc': pm.get('description') or meta.get('description', ''), 'body': local_links('\n'.join(parts)), 'depth': 1,
-            'css': ('work',), 'js': (), 'slim': True, 'service': title, 'og_image': asset('screenshots/shot-消費分析.png')}
+            'css': ('work',), 'js': (), 'slim': True, 'service': title, 'faq': faq_list, 'og_image': asset('screenshots/shot-消費分析.png')}
 
 
 def render_appsheet():
-    """The AppSheet section of /work/, written in content/work/appsheet.md:
-    intro, a button, ::: offers (cards), ::: systems (one card per work), ::: details (folded lists)."""
-    meta, body = read('appsheet.md')
-    first = body.find(':::')
-    intro_text, rest = (body, '') if first < 0 else (body[:first], body[first:])
-    intro = ''.join(f'<p>{M.inline(r)}</p>' for k, r in M.blocks(intro_text) if k == 'p')
-    out = [f'    <h2>{M.inline(meta.get("title", "AppSheet"))}</h2>\n    <div class="prose">{intro}</div>\n'
-           f'    <p class="cta-line"><a class="cta-btn" href="#contact">{M.esc(meta.get("cta", S["cta"]))}</a></p>\n']
-    folded = []
-    for typ, args, dbody in M.directives(rest):
-        if typ == 'offers':
-            cards, notes = '', ''
-            for kind, raw in M.blocks(dbody):
-                if kind == 'ul':
-                    for item in M.list_items(raw):
-                        m = re.match(r'^\*\*(.+?)\*\*\s*(.*)$', item)
-                        label, text = (m.group(1).rstrip('：:'), m.group(2)) if m else (item, '')
-                        cards += f'      <div class="offer"><h4>{M.inline(label)}</h4><p>{M.inline(text)}</p></div>\n'
-                elif kind == 'p':
-                    notes += f'    <p class="offer-note">{M.inline(raw)}</p>\n'
-            out.append(f'    <h3 class="points-title">{M.inline(args)}</h3>\n    <div class="offers">\n{cards}    </div>\n{notes}')
-        elif typ == 'systems':
-            lead = ''.join(f'    <p class="lede">{M.inline(raw)}</p>\n' for kind, raw in M.blocks(dbody) if kind == 'p')
-            out.append(f'    <h3 class="points-title">{M.inline(args)}</h3>\n{lead}{work_cards()}')
-        elif typ == 'details':
-            lis = ''.join(f'        <li>{M.inline(i)}</li>\n' for kind, raw in M.blocks(dbody) if kind == 'ul' for i in M.list_items(raw))
-            folded.append(f'    <details class="more-info">\n      <summary>{M.inline(args)}</summary>\n      <ul class="points">\n{lis}      </ul>\n    </details>\n')
-        else:
-            raise SystemExit(f'content/work/appsheet.md: unknown block "::: {typ}" (known: offers, systems, details)')
-    return ''.join(out) + ''.join(folded)
+    """The AppSheet block of /work/: a few sentences (front matter `short` of appsheet.md), the card of every work, and a link to
+    the full page at /appsheet/ (front matter `more` is the link text)."""
+    meta, _ = read('appsheet.md')
+    text = meta.get('short', '')
+    return (f'    <h2>{M.inline(meta.get("title", "AppSheet"))}</h2>\n    <div class="prose"><p>{M.inline(text)}</p></div>\n'
+            f'{work_cards()}'
+            f'    <p class="more-link"><a class="cta-btn secondary" href="{P}/appsheet/">{M.esc(meta.get("more", S["more"]))}</a></p>\n')
 
 
 # ------------------------------------------------------------------ portfolio/<slug>.md

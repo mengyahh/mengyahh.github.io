@@ -213,3 +213,14 @@ html[lang="ja"] .work { --w-sans: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI
 .work .maker-text .maker-link { margin: 16px 0 0; }
 .work .maker-text .maker-link .cta-btn { margin: 0; }
 @media (max-width: 600px) { .work .maker { flex-direction: column; gap: 16px; } }
+
+/* FAQ on the stand-alone AppSheet page */
+.work .faq { max-width: var(--measure); }
+.work .faq-item { padding: 16px 0; border-top: 1px solid var(--border); }
+.work .faq-item:first-child { border-top: 0; padding-top: 4px; }
+.work .faq-item h3 { font-family: var(--w-sans); font-size: 15.5px; font-weight: 700; color: var(--ink); margin: 0 0 6px; line-height: 1.6; }
+.work .faq-item p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+
+/* link under the AppSheet block of /work/ */
+.work .more-link { margin: 22px 0 0; }
+.work .more-link .cta-btn { margin: 0; }

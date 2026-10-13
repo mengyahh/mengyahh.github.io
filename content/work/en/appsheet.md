@@ -1,27 +1,30 @@
 ---
 title: AppSheet Systems
 cta: Ask for a trial by email
+short: Management systems built on Google's AppSheet around your work or life, and a few ready-made AppSheet templates you can simply buy outright. Your data stays in your own Google Sheets, easy to export. A one-off purchase, no subscription.
+more: See the full page →
 description: Custom management systems built on Google's AppSheet, made to fit your work or life. A few existing works (internal payment requests, freelancer income and expenses, case management, broiler farm records) can also be bought outright. Feel free to ask for a trial.
 ---
 
-AppSheet is an app platform from Google that connects to Google's services and lets you build a system of your own. I can build a system around your work or your life. Or, if one of my existing systems already fits what you need, you can simply buy it outright.
+AppSheet is an app platform from Google that connects to Google's services and lets you build a system of your own. I can do the AppSheet development for you (custom builds, freelance work) around your work or your life, and make a small, just-enough system. Or, if one of my existing systems (templates) already fits what you need, you can simply buy it outright.
 
 If you're already used to Google's services, AppSheet can come in almost painlessly: there's no new platform to learn! The data also lives in your Google account, so it's easy to export and use.
 
 ::: offers How I work
-- **Fully custom:** Built from scratch around your needs. Simple or complex, feel free to ask.
-- **Existing work + some customisation:** If an existing work mostly fits, I can adjust it for an extra fee, and then you buy it outright.
-- **Existing work:** If an existing work fits what you need, you can simply buy it (a one-off purchase).
+- **Fully custom (AppSheet freelance work):** A new AppSheet system built from scratch around your needs. Simple or complex, feel free to ask.
+- **Existing work + some customisation:** If an existing work (template) mostly fits, I can adjust it for an extra fee, and then you buy it outright.
+- **Existing work:** If an existing work (template) fits what you need, you can simply buy it (a one-off purchase).
 
 **Warranty:** If you need it, I also offer a warranty service.
 :::
 
 ::: systems Existing works
-These are my existing works. Feel free to [write to me](#contact) and ask for a trial!
+These are my existing works (AppSheet templates). Feel free to [write to me](#contact) and ask for a trial!
 :::
 
 ::: details Who is a system built on AppSheet for?
 - You're used to the Google ecosystem, don't want to spend a lot of effort learning something new, and don't want a painful switch to a new system.
+- You want a small system that is just enough, not a big enterprise system.
 - You'd like to buy a system outright, not pay for a subscription every year.
 - You want to own your data, and be free to download and move it.
 - You care about security, and since Google is a big company, you find it more trustworthy.
