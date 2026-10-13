@@ -9,37 +9,40 @@ description: AppSheet development and freelance work: custom management systems 
 
 ::: faq FAQ
 ### What is AppSheet?
-AppSheet is an app platform from Google that connects to Google's services and lets you build a system of your own. If you're already used to Google's services, there's almost no new platform to learn.
+AppSheet is an app platform from Google that connects to Google's services and lets you build a system of your own. If you're already used to Google's services, it's easy to get started and to learn.
 
-### What does an AppSheet project look like?
-We first talk about your ideas and needs (a one-hour first chat). Then I get on site to see how things are actually done, and we find the shape of it together. After that we build it together, and I walk you through it and hand it over.
+### What does the AppSheet process look like?
+First I get to know what you need, look at the data you already have (if any), and we work out the shape of it. Once that's confirmed, I build and adjust it, and finally I give you instructions and hand it over, with a one-month warranty included.
 
-### Can I try it first?
-You're welcome to ask for a trial of the existing works (templates). Only after using one will you know how it feels and what else you need, and then we decide together what to adjust.
+### Can I try it?
+You're welcome to ask for a trial of the existing works (templates) by email.
 
 ### How much does it cost? Is it a subscription?
 It's a one-off purchase, not a subscription. The actual quote depends on what you need, and we talk about it after you write to me.
 
-### Where is my data? Can I export it?
-Your data stays in your own Google account (Google Sheets). You can download and move it freely, and it's easy to export.
+### Where will the data I enter into the system be? Can I export it?
+Your data stays in your own Google account (Google Sheets), and you can use it freely.
 
 ### Can you help me bring my existing data into the system?
-Yes. I can help sort out your existing data (records in Excel or Google Sheets, for example) and bring it into the system, so you don't have to type everything in again. Write to me and tell me what your data looks like, and we'll talk about how.
+Yes. I can help sort out your existing data (records in Excel or Google Sheets, for example) and bring it into the system, so you don't have to retype it entry by entry.
+Because every set of data looks different, the cost of importing can't be given as a fixed price. I need to see the data before I can quote.
 
-### Can an existing work be changed?
-Yes. If an existing work mostly fits, I can adjust it for an extra fee, and then you buy it outright. If it doesn't fit at all, I can build a new system from scratch.
+### If an existing work doesn't fully fit, can I ask for some customisation?
+Yes. You just pay an extra fee for the adjustments, and then buy it outright.
 
 ### Does it work on phones? Is there a limit on users?
-It works in computer browsers, on Android and iOS phones, and on tablets, and you can enter data offline and it syncs when you're back online. About 1 to 10 users is the best fit; with more people the system gets more complicated.
+It works in computer browsers, on Android and iOS phones, and on tablets, and you can enter data offline and it syncs when you're back online.
+The user limit depends on whether your Google account is the free or the paid version. The free version allows up to 10 users.
 
 ### Do I need to know programming or AppSheet?
 No. You don't need to write any code to use it, and if you're already used to Google's services you'll get the hang of it quickly.
 :::
 
-::: about About me
-I'm Meng Ya, a freelancer of five years, living in Chiayi County, Taiwan. My core skills are breaking problems down, doing the research, and thinking things through, and I work from analysis and planning to making, one person from start to finish.
+::: about About
+I'm Meng Ya, a freelancer of five years. My core skills are breaking problems down, doing the research, and thinking things through, and I offer an all-in-one service of "analysis, planning and making".
 
-Some of these systems started from my own freelance life (the Freelancer Income & Expense System, for example), and some from first-hand work experience (the Broiler Farm Record System). I first work out how you actually work and find the real pain points, then we talk through what to make and how.
+Some of my systems so far started from my own freelance life, and some from first-hand work experience. I first work out how you actually work and find the real pain points, then we talk through what to make and how.
+Sometimes what you need most isn't a system. Or there is other, more important homework to do before you have one.
 
 => [See what else I can do →](/en/work/)
 :::
