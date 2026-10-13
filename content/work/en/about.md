@@ -68,7 +68,7 @@ Literature collection, organising data, summarising talks and meetings
 ### 2023 Running a market [Lecheng Life Festival 樂城生活節](portfolio/lecheng/)
 Planning, managing and liaising with stalls, social media graphics, graphic design for printed materials
 
-### 2021–2023 Making content about stream issues [Dao Du He Xi 島讀河溪](portfolio/daodu-hexi/)
+### 2021–2023 Making content about stream issues [Island Stream Guide 島讀河溪](portfolio/daodu-hexi/)
 Teaching slides, a themed website, video production and editing, social media posts, teaching assistant at events, leading school classes
 
 ---
