@@ -102,7 +102,9 @@ def screenshot(src):
 # ------------------------------------------------------------------ about.md  ->  /work/
 
 def section(sid, kicker, inner):
-    return (f'<section class="block" id="{sid}">\n  <div class="wrap">\n    <p class="kicker">{M.esc(kicker)}</p>\n{inner}\n  </div>\n</section>\n')
+    """kicker: the small label above the heading; leave it empty when the heading already says the same."""
+    label = f'    <p class="kicker">{M.esc(kicker)}</p>\n' if kicker else ''
+    return f'<section class="block" id="{sid}">\n  <div class="wrap">\n{label}{inner}\n  </div>\n</section>\n'
 
 
 def r_hero(args, body, page_title):
@@ -275,7 +277,7 @@ def build_about():
             parts.append(contact)
             nav.append(('contact', S['contact']))
         elif typ == 'appsheet':
-            parts.append(section('appsheet', args or 'AppSheet', render_appsheet()))
+            parts.append(section('appsheet', '', render_appsheet()))          # the heading says "AppSheet" already
             nav.append(('appsheet', args or 'AppSheet'))
         elif typ in BLOCKS:
             parts.append(section(typ, args or typ, BLOCKS[typ](args, body)))
@@ -416,7 +418,7 @@ def build_appsheet_page(contact):
         nonlocal n
         label = labels[ids.index(sid)] if len(labels) == len(ids) else sid
         sections.append((sid, label))
-        parts.append(section(sid, label, inner))
+        parts.append(section(sid, '', inner))          # the heading says it already; the label is only used by the in-page links
         n += 1
     folded_ids = ['fit', 'what']
     for typ, args, dbody in M.directives(rest):
