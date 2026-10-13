@@ -65,10 +65,10 @@ Writing the content (with AI), illustrations, layout, web version
 ### 2024 Research on the history and industrial development of a river basin
 Literature collection, organising data, summarising talks and meetings
 
-### 2023 Running a market [Lecheng Life Festival 樂城生活節 (in Chinese)](/work/portfolio/lecheng/)
+### 2023 Running a market [Lecheng Life Festival 樂城生活節](portfolio/lecheng/)
 Planning, managing and liaising with stalls, social media graphics, graphic design for printed materials
 
-### 2021–2023 Making content about stream issues [Dao Du He Xi 島讀河溪 (in Chinese)](/work/portfolio/daodu-hexi/)
+### 2021–2023 Making content about stream issues [Dao Du He Xi 島讀河溪](portfolio/daodu-hexi/)
 Teaching slides, a themed website, video production and editing, social media posts, teaching assistant at events, leading school classes
 
 ---

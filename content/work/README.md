@@ -161,7 +161,7 @@ content/work/en/products/*.md      四個作品頁（檔名跟中文版相同）
 content/work/ja/...                日文版，結構相同
 ```
 
-- 作品集頁（`portfolio/`）只有中文；英日文版的專案連結直接連到中文頁，連結文字標示「（in Chinese／中国語）」。
+- 作品集頁也有英日文版（`content/work/en/portfolio/`、`content/work/ja/portfolio/`，檔名跟中文版相同，圖片行照抄、只翻譯標題和文字）。
 - 缺哪個檔就不會產生那一頁；語言切換只會列出有該頁的語言。
 - 英日文版的 App 畫面：把截圖放進 `assets/work/screenshots/en/` 或 `assets/work/screenshots/ja/`，檔名跟中文版同名，就會自動取代中文介面的截圖。
 - 頁面上的固定文字（「適用對象」「了解更多」「複製 email」等）在 `scripts/work.py` 最上面的 `STR`。

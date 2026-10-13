@@ -3,7 +3,7 @@
     about.md          -> /work/                     what I do, projects, how we work, the AppSheet section, contact
     appsheet.md       -> (the AppSheet section of /work/)
     products/*.md     -> /work/appsheet/<slug>/     one page per existing work
-    portfolio/*.md    -> /work/portfolio/<slug>/    project galleries (Chinese only)
+    portfolio/*.md    -> /work/portfolio/<slug>/    project galleries
 
 English and Japanese live under /en/work/ and /ja/work/. Pictures are in assets/work/ (portfolio/, screenshots/);
 in the Markdown they are written relative to that folder. build.py puts the returned page dicts into the shared
@@ -23,16 +23,19 @@ PROJECTS_VISIBLE = None                    # None: show every project; a number:
 STR = {
     'zh': dict(site='萌芽中。', title='工作', cta='來信申請試用', for_='適用對象：', more='了解更多 →', back_appsheet='← 回到 AppSheet 管理系統',
                back_projects='← 回到做過的專案', portfolio='作品集', copy='複製 email', copied='已複製', selected='已選取，請按複製',
-               projects_more='看其餘 {n} 個專案', page_nav='頁內導覽', contact='聯絡', video='播放影片：{label}', piece='{label}：作品 {i}'),
+               projects_more='看其餘 {n} 個專案', page_nav='頁內導覽', contact='聯絡', video='播放影片：{label}', piece='{label}：作品 {i}',
+               join='、', sep='：', end='。'),
     'en': dict(site='Sprouting.', title='Work', cta='Ask for a trial by email', for_='Suited for: ', more='Read more →',
                back_appsheet='← Back to AppSheet systems', back_projects='← Back to the projects', portfolio='Portfolio',
                copy='Copy email', copied='Copied', selected='Selected, press copy', projects_more='Show the other {n} projects',
-               page_nav='On this page', contact='Contact', video='Play video: {label}', piece='{label}: piece {i}'),
+               page_nav='On this page', contact='Contact', video='Play video: {label}', piece='{label}: piece {i}',
+               join=', ', sep=': ', end='.'),
     'ja': dict(site='芽吹き中。', title='仕事', cta='メールでトライアルを申し込む', for_='対象：', more='詳しく見る →',
                back_appsheet='← AppSheet システム一覧へ', back_projects='← プロジェクト一覧へ', portfolio='ポートフォリオ',
                copy='メールをコピー', copied='コピーしました', selected='選択しました。コピーしてください',
                projects_more='ほかの{n}件のプロジェクトを見る', page_nav='このページの内容', contact='お問い合わせ',
-               video='動画を再生：{label}', piece='{label}：作品 {i}'),
+               video='動画を再生：{label}', piece='{label}：作品 {i}',
+               join='、', sep='：', end='。'),
 }
 LANG = 'zh'
 S = STR['zh']
@@ -424,7 +427,7 @@ def render_appsheet():
     return ''.join(out) + ''.join(folded)
 
 
-# ------------------------------------------------------------------ portfolio/<slug>.md  (Chinese only)
+# ------------------------------------------------------------------ portfolio/<slug>.md
 
 def portfolio_rows(body, gi, name):
     rows, cur = [], None
@@ -489,7 +492,7 @@ def build_portfolio(contact):
         meta, body = M.split_front(open(path, encoding='utf-8').read())
         title = meta.get('title') or slug
         rows_html, labels = portfolio_rows(body, gi, name)
-        lab = '、'.join(labels)
+        lab = S['join'].join(labels)
         first = re.search(r'!\[[^\]]*\]\(([^)\s"]+)', body)
         img = None
         if first:
@@ -499,7 +502,7 @@ def build_portfolio(contact):
                  f'    <h1>{M.inline(title)}</h1><p class="lede">{M.esc(lab)}</p></div>\n  </div>\n</header>\n\n'
                  f'<section class="pf">\n  <div class="wrap">\n    {rows_html}\n    <p class="back"><a href="{P}/work/#projects">{S["back_projects"]}</a></p>\n  </div>\n</section>\n\n{contact}')
         pages.append({'path': f'{LANGDIR}work/portfolio/{slug}/index.html', 'url': f'{P}/work/portfolio/{slug}/', 'lpath': f'/work/portfolio/{slug}/',
-                      'title': f'{title} · {S["site"]}', 'desc': meta.get('description') or f'{title}：{lab}。', 'body': local_links(inner), 'depth': 3,
+                      'title': f'{title} · {S["site"]}', 'desc': meta.get('description') or f'{title}{S["sep"]}{lab}{S["end"]}', 'body': local_links(inner), 'depth': 3,
                       'css': ('work', 'lightbox'), 'js': ('lightbox', 'yt'), 'og_image': img})
     return pages
 
@@ -511,7 +514,7 @@ def build_all(lang='zh'):
     set_lang(lang)
     about, contact = build_about()
     pages = [about] + build_products(contact)
-    if lang == 'zh':                          # the project galleries are Chinese only
+    if os.path.isdir(os.path.join(CONTENT, 'portfolio')):
         pages += build_portfolio(contact)
     for p in pages:
         extra = copy_js() if 'id="copy"' in p['body'] else ''
