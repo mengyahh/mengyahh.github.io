@@ -48,7 +48,7 @@ LANG, UP, OUT = 'zh', '', ''          # current language; UP = "../" prefix from
 HTML_LANG = {'zh': 'zh-Hant', 'en': 'en', 'ja': 'ja'}
 LOCALE = {'zh': 'zh_TW', 'en': 'en_US', 'ja': 'ja_JP'}
 LANG_NAME = {'zh': '中文', 'en': 'English', 'ja': '日本語'}
-AUTHORS = {'zh': '萌芽', 'en': 'Meng Ya', 'ja': 'Meng Ya'}
+AUTHORS = {'zh': '萌芽', 'en': 'Meng Ya', 'ja': 'メイ'}
 
 CATEGORY_LABELS = {
     'en': {'各種心得': 'Thoughts', '日常記事': 'Daily life', '創作': 'Creative writing', '階段回顧': 'Looking back', '其他': 'Other',
@@ -110,24 +110,24 @@ STRINGS = {
         foot_contact='連絡したくなったら：', copy='© 萌芽中。 All Rights Reserved.',
         stats='ページの閲覧数は GoatCounter で数えています。Cookie は使わず、個人情報も記録しません。',
         photo_n='{title}（写真 {i}/{n}）', photo_cap='{title}：{cap}', carousel='{title}の写真',
-        cooking_h1='料理記録', cooking_lede='作ったもの、そのときの感想、写真。', cooking_desc='Meng Ya の料理記録：作ったもの、感想、写真。',
+        cooking_h1='料理記録', cooking_lede='作ったもの、そのときの感想、写真。', cooking_desc='メイの料理記録：作ったもの、感想、写真。',
         years_aria='年へ移動',
         cooking_note='翻訳しているのは新しい記録だけです。<a href="/cooking/">すべての記録（中国語）→</a>',
-        blog_h1='ブログ', blog_lede='思ったこと、日々のこと、創作。', blog_desc='Meng Ya のブログ：思ったこと、日々のこと、創作。',
+        blog_h1='ブログ', blog_lede='思ったこと、日々のこと、創作。', blog_desc='メイのブログ：思ったこと、日々のこと、創作。',
         blog_note='翻訳しているのは新しい記事だけです。<a href="/blog/">すべての記事（中国語）→</a>',
         year_aria='年で絞り込む', clear='絞り込みを解除', none='該当する記事がありません。キーワードを変えるか、絞り込みを解除してみてください。',
         more='記事をもっと見る', side_aria='記事を探す', search_label='記事を検索', search_ph='タイトルと本文を検索',
         recent='最近の記事', recent_comments='',
         kw='キーワード', post_nav='前後の記事', newer='新しい記事 →', older='← 古い記事', views='{n} 回閲覧',
-        home_title='芽吹き中。 · mengyahh', home_desc='Meng Ya の個人サイト：料理記録、ブログ、仕事のこと。',
+        home_title='芽吹き中。 · mengyahh', home_desc='メイの個人サイト：料理記録、ブログ、仕事のこと。',
         home_all_posts='すべての記事 →', home_all='すべて →', home_cooking_desc='作ったもの、感想、写真。',
         home_more='もっと見る →', home_go='もっと見る →',
         home_about_desc='嘉義県に住んでいます。新しい暮らしに、まだ慣れている途中です。<br>2025年6月〜2026年6月は日本でワーキングホリデー。いま、その記録を一生懸命書き足しています。',
         home_work_desc='フリーランス歴5年の、ちょっと変わった働き方をしています。最終的な成果物だけを見ると、私の専門が何なのかわかりにくくて、なんでも屋に見えるかもしれません。<br>私の仕事は、コンサルタントであり、伴走者であり、実行役でもあります。まず必要なことを理解して、本当の困りごとを見つけてから、何をどう作るかを話し合い、「分析→企画→制作」をまるごとお引き受けします。',
         work_menu='仕事メニューを開く', lang_menu='言語',
         about_h1='プロフィール', about_title='プロフィール',
-        about_desc='Meng Ya の自己紹介。フリーランス歴5年、問題を分解して調べて分析するのが得意で、分析・企画から制作までまるごと引き受けています。',
-        profile_alt='Meng Ya の写真'),
+        about_desc='メイの自己紹介。フリーランス歴5年、問題を分解して調べて分析するのが得意で、分析・企画から制作までまるごと引き受けています。',
+        profile_alt='メイの写真'),
 }
 S = STRINGS['zh']
 
