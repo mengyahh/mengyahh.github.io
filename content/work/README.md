@@ -107,7 +107,7 @@ more: 看完整介紹 →                ← /work/ 區塊最後那顆按鈕的�
 :::
 ```
 
-作品卡片的內容（標題、適用對象、一句話介紹、順序）來自各作品頁最上面的 `title`、`for`、`summary`、`order`。
+作品卡片上只顯示作品名稱和適用對象，來自各作品頁最上面的 `title`、`for`，順序是 `order`（`summary` 目前不顯示在卡片上；想顯示的話，在 `appsheet-page.md` 最上面加一行 `card_summary: yes`）。
 
 `/work/` 頁面最上面的「能力｜專案類型｜…｜AppSheet｜聯絡」頁內導覽會依區塊自動產生；AppSheet 區塊在 `about.md` 裡的 `::: appsheet` 那一行決定位置（目前在「為什麼找我」和聯絡區之間）。
 

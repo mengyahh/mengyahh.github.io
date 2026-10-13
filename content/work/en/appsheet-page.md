@@ -4,7 +4,6 @@ seo_title: AppSheet Development | Custom Systems, Templates and Freelance Work
 eyebrow: AppSheet
 headline: Custom **micro management systems** built on AppSheet around your work or your life, and a few ready-made AppSheet templates you can simply buy outright.
 nav: How I work | Existing works | Who it's for | Features | FAQ | About me | Contact
-card_summary: no
 description: AppSheet development and freelance work: custom management systems built around your work or life, plus AppSheet templates you can buy outright (payment requests, freelancer income and expenses, case management, broiler farm records). Small systems for micro organisations, small teams and individuals; your data stays in your own Google Sheets. A one-off purchase, no subscription. Feel free to ask for a trial.
 ---
 

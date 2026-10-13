@@ -354,8 +354,8 @@ def product_files():
     return sorted(works, key=lambda w: w[0])
 
 
-def work_cards(summary=True):
-    """The same card for every work: title, who it suits, one-line summary (the summary can be left out)."""
+def work_cards(summary=False):
+    """The same card for every work: title and who it suits (summary=True adds the one-line summary of the work)."""
     rows = ''
     for _, slug, pm, _, _ in product_files():
         who = f'        <p class="sys-for">{S["for_"]}{M.inline(pm["for"])}</p>{NL}' if pm.get('for') else ''
@@ -437,7 +437,7 @@ def build_appsheet_page(contact):
             add('services', head + f'    <div class="offers">\n{cards}    </div>\n{notes}')
         elif typ == 'systems':
             lead_p = ''.join(f'    <p class="lede">{M.inline(raw)}</p>\n' for kind, raw in M.blocks(dbody) if kind == 'p')
-            add('works', head + lead_p + work_cards(summary=pm.get('card_summary', 'yes').lower() not in ('no', 'false', '0')))
+            add('works', head + lead_p + work_cards(summary=pm.get('card_summary', 'no').lower() in ('yes', 'true', '1')))
         elif typ == 'details':
             lis = ''.join(f'      <li>{M.inline(i)}</li>\n' for kind, raw in M.blocks(dbody) if kind == 'ul' for i in M.list_items(raw))
             add(folded_ids.pop(0), head + f'    <ul class="points">\n{lis}    </ul>\n')
