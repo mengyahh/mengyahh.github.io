@@ -207,7 +207,7 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
           f'<meta name="twitter:image" content="{esc(og_image)}">')
     og += jsonld(*structured)
     styles = ''.join(f'<link rel="stylesheet" href="{base}{UP}assets/css/{c}.css">' for c in ('site',) + tuple(css))
-    scripts = ''.join(f'<script src="{base}{UP}assets/js/{j}.js" defer></script>' for j in ('nav',) + tuple(js))
+    scripts = ''.join(f'<script src="{base}{UP}assets/js/{j}.js" defer></script>' for j in ('nav', 'top') + tuple(js))
     fonts = FONTS.replace('&display=swap', FONTS_JA + '&display=swap') if LANG == 'ja' else FONTS
     analytics = ''
     stats_note = ''
