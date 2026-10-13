@@ -191,14 +191,11 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
         lang_items = ''.join(
             f'<li><a href="{prefix(l)}{path}" hreflang="{HTML_LANG[l]}" lang="{HTML_LANG[l]}"' + (' aria-current="true"' if l == LANG else '') + f'>{LANG_NAME[l]}</a></li>'
             for l in alts)
-        globe = ('<svg class="globe" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" '
-                 'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/>'
-                 '<path d="M12 2.5c2.8 2.6 4.2 5.8 4.2 9.5s-1.4 6.9-4.2 9.5c-2.8-2.6-4.2-5.8-4.2-9.5S9.2 5.1 12 2.5z"/></svg>')
-        chev = ('<svg class="chev" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" '
+        chev = ('<svg class="chev" viewBox="0 0 12 12" width="9" height="9" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" '
                 'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>')
-        items.append(f'<li class="lang-switch"><button type="button" class="lang-toggle" aria-expanded="false" aria-controls="lang-list" '
-                     f'aria-label="{esc(S["lang_menu"])}: {esc(LANG_NAME[LANG])}">{globe}<span class="lang-name">{LANG_NAME[LANG]}</span>{chev}</button>'
-                     f'<ul class="lang-list" id="lang-list">{lang_items}</ul></li>')
+        items.append(f'<li class="lang-switch"><details><summary aria-label="{esc(S["lang_menu"])}: {esc(LANG_NAME[LANG])}">'
+                     f'<span class="lang-name">{LANG_NAME[LANG]}</span>{chev}</summary>'
+                     f'<ul class="lang-list">{lang_items}</ul></details></li>')
     hreflang = ''.join(f'<link rel="alternate" hreflang="{HTML_LANG[l]}" href="{SITE}{prefix(l)}{path}">' for l in alts) if len(alts) > 1 else ''
     if hreflang:
         hreflang += f'<link rel="alternate" hreflang="x-default" href="{SITE}{path}">'

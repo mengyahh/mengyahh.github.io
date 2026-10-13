@@ -91,33 +91,24 @@ html[lang="en"] .sec-body p, html[lang="en"] .sec-body li { text-align: left; te
 html[lang="ja"] { word-break: auto-phrase; line-break: strict; }
 h1, h2, h3 { text-wrap: balance; }
 
-/* language menu: a pill button; the list is a small card under it with a check mark on the current language */
+/* language menu: looks like the other navigation items; the list is a native <details>, so it is closed until it is clicked */
 .topnav { align-items: center; }
-.lang-switch { position: relative; margin-left: 4px; }
-.lang-switch .lang-toggle { display: none; }
-.lang-switch .lang-list { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; }       /* without JavaScript: plain links */
-.lang-switch.js .lang-toggle {
-  display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px 5px 10px; border: 1px solid var(--border-strong); border-radius: 999px;
-  background: transparent; color: var(--ink-soft); font: inherit; font-size: 14px; line-height: 1.3; cursor: pointer;
+.lang-switch { margin-left: 4px; }
+.lang-switch details { position: relative; }
+.lang-switch summary { display: inline-flex; align-items: center; gap: 5px; padding: 4px 0; color: var(--ink-soft); cursor: pointer; list-style: none; }
+.lang-switch summary::-webkit-details-marker { display: none; }
+.lang-switch summary::marker { content: ""; }
+.lang-switch summary:hover, .lang-switch details[open] summary { color: var(--accent); }
+.lang-switch .chev { flex: none; color: var(--muted); transition: transform .15s ease; }
+.lang-switch details[open] .chev { transform: rotate(180deg); }
+.lang-switch .lang-list {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; min-width: 130px; margin: 0; padding: 4px 0; list-style: none;
+  background: var(--bg); border: 1px solid var(--border-strong); border-radius: 6px; box-shadow: 0 6px 18px rgba(38, 42, 33, 0.08);
 }
-.lang-switch.js .lang-toggle:hover, .lang-switch.js.open .lang-toggle { border-color: var(--accent); color: var(--accent); }
-.lang-toggle .globe, .lang-toggle .chev { flex: none; }
-.lang-toggle .chev { transition: transform .15s ease; }
-.lang-switch.open .lang-toggle .chev { transform: rotate(180deg); }
-.lang-switch.js .lang-list {
-  display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: max-content; min-width: 100%;
-  flex-direction: column; gap: 2px; padding: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
-}
-.lang-switch.js.open .lang-list { display: flex; }
-.topnav .lang-list a {
-  display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 8px 12px; border: 0; border-radius: 8px;
-  color: var(--ink); font-size: 14.5px; line-height: 1.5; text-decoration: none; white-space: nowrap;
-}
+.topnav .lang-list a { display: block; padding: 6px 16px; border: 0; color: var(--ink); line-height: 1.6; white-space: nowrap; }
 .topnav .lang-list a:hover { background: var(--accent-soft); color: var(--accent); }
 .topnav .lang-list a[aria-current="true"] { color: var(--accent); font-weight: 700; }
-.topnav .lang-list a[aria-current="true"]::after { content: "✓"; font-weight: 400; }
-@media (max-width: 640px) {            /* phones: the language button sits at the top right, next to the site name */
+@media (max-width: 640px) {            /* phones: next to the site name, top right */
   .topbar .wrap { position: relative; }
   .lang-switch { position: absolute; top: 10px; right: 18px; margin: 0; }
-  .lang-switch.js .lang-toggle { padding: 4px 10px 4px 9px; font-size: 13.5px; }
 }
