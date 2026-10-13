@@ -1,5 +1,7 @@
 /* 工作 (work) pages: /work/, /work/appsheet/…, /work/portfolio/…  — everything is scoped to .work */
 .work {
+  --w-sans: "Noto Sans TC", sans-serif;
+  --w-serif: "Noto Serif TC", serif;
   --moss: var(--accent);
   --sprout: #5e8443;
   --clay: #97693d;
@@ -17,7 +19,7 @@
 .work .eyebrow a:hover { text-decoration: underline; }
 
 .work .hero { padding-block: 0 36px; }
-.work .statement { margin: 8px 0 18px; padding: 0 0 0 20px; border-left: 3px solid var(--accent); max-width: 34em; font-family: "Noto Serif TC", serif; font-size: clamp(19px, 2.6vw, 23px); line-height: 1.8; color: var(--ink); }
+.work .statement { margin: 8px 0 18px; padding: 0 0 0 20px; border-left: 3px solid var(--accent); max-width: 34em; font-family: var(--w-serif); font-size: clamp(19px, 2.6vw, 23px); line-height: 1.8; color: var(--ink); }
 .work .statement .ask { color: var(--accent); font-weight: 700; }
 .work .hero .lede { font-size: 16.5px; color: var(--ink-soft); max-width: var(--measure); margin: 0 0 12px; }
 
@@ -27,7 +29,7 @@
 
 .work .skills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
 .work .skill { background: var(--bg); padding: 22px 22px 24px; display: flex; flex-direction: column; gap: 10px; }
-.work .skill h3 { font-family: "Noto Sans TC", sans-serif; font-size: 15.5px; font-weight: 700; color: var(--moss); margin: 0; }
+.work .skill h3 { font-family: var(--w-sans); font-size: 15.5px; font-weight: 700; color: var(--moss); margin: 0; }
 .work .skill p { font-size: 13.5px; color: var(--ink-soft); margin: 0; line-height: 1.7; }
 .work .skill dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 13.5px; }
 .work .skill dt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; color: var(--clay); padding-top: 2px; }
@@ -37,7 +39,7 @@
 .work .fields strong { color: var(--ink); }
 
 .work .tools { margin-top: 28px; padding-top: 22px; border-top: 1px dashed var(--border-strong); }
-.work .tools h3 { font-family: "Noto Sans TC", sans-serif; font-size: 15px; font-weight: 700; margin: 0 0 12px; color: var(--ink); }
+.work .tools h3 { font-family: var(--w-sans); font-size: 15px; font-weight: 700; margin: 0 0 12px; color: var(--ink); }
 .work .tools dl { margin: 0; display: grid; grid-template-columns: 7em 1fr; gap: 10px 16px; align-items: baseline; }
 .work .tools dt { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; color: var(--clay); }
 .work .tools dd { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 8px; }
@@ -47,7 +49,7 @@
 .work .projects li { display: grid; grid-template-columns: minmax(0, 27em) minmax(0, 1fr); align-items: start; gap: 24px; padding-block: 18px; border-top: 1px solid var(--border); }
 .work .projects li:last-child { border-bottom: 1px solid var(--border); }
 .work .projects .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
-.work .projects .type { font-family: "Noto Serif TC", serif; font-weight: 600; font-size: 16px; color: var(--ink); }
+.work .projects .type { font-family: var(--w-serif); font-weight: 600; font-size: 16px; color: var(--ink); }
 .work .plink { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; text-decoration: none; border-bottom: 1px solid var(--border-strong); align-self: flex-start; padding-bottom: 1px; }
 .work .plink:hover { border-color: var(--moss); }
 .work .tags { display: flex; flex-wrap: wrap; gap: 6px 8px; }
@@ -57,7 +59,7 @@
 .work .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); counter-reset: step; }
 .work .steps li { background: var(--bg); padding: 18px 16px 20px; display: flex; flex-direction: column; gap: 6px; counter-increment: step; }
 .work .steps li::before { content: counter(step); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; color: var(--sprout); }
-.work .steps h3 { font-family: "Noto Sans TC", sans-serif; font-size: 14.5px; font-weight: 700; margin: 0; color: var(--ink); }
+.work .steps h3 { font-family: var(--w-sans); font-size: 14.5px; font-weight: 700; margin: 0; color: var(--ink); }
 .work .steps p { font-size: 13px; color: var(--ink-soft); margin: 0; line-height: 1.65; }
 .work .diag { margin-top: 20px; font-size: 14px; color: var(--ink-soft); border-left: 2px solid var(--sprout); padding-left: 14px; max-width: var(--measure); }
 
@@ -80,7 +82,7 @@
 .work section.pf { padding-block: 12px 24px; }
 .work .pf-row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 0 36px; padding-block: 34px; border-bottom: 1px solid var(--border); }
 .work .pf-row:last-child { border-bottom: 0; }
-.work .pf-info h2 { font-family: "Noto Sans TC", sans-serif; font-size: 17px; font-weight: 700; color: var(--moss); margin: 0 0 8px; letter-spacing: 0; }
+.work .pf-info h2 { font-family: var(--w-sans); font-size: 17px; font-weight: 700; color: var(--moss); margin: 0 0 8px; letter-spacing: 0; }
 .work .pf-info p { margin: 0 0 8px; font-size: 14px; line-height: 1.75; color: var(--ink-soft); }
 .work .pf-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: start; }
 .work .pf-grid.c1 { grid-template-columns: minmax(0, 460px); }
@@ -111,7 +113,7 @@
 .work .sys-for { font-size: 14px; color: var(--moss); font-weight: 700; margin: -8px 0 18px; }
 .work .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin: 30px 0; }
 .work .feature { background: var(--bg); padding: 20px 22px; }
-.work .feature h3 { font-family: "Noto Sans TC", sans-serif; font-size: 14.5px; font-weight: 700; color: var(--moss); margin: 0 0 8px; }
+.work .feature h3 { font-family: var(--w-sans); font-size: 14.5px; font-weight: 700; color: var(--moss); margin: 0 0 8px; }
 .work .feature p { font-size: 13.5px; color: var(--ink-soft); margin: 0; }
 .work .screens-block { margin: 30px 0; }
 .work .screens-block .chart-title { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; letter-spacing: 0.05em; color: var(--ink-soft); margin: 0 0 18px; }
@@ -128,7 +130,7 @@
 .work .cta-btn:hover { opacity: 0.9; }
 .work .cta-btn.secondary { background: transparent; color: var(--moss); border: 1px solid var(--border-strong); }
 .work .cta-row { margin-top: 14px; }
-.work .points-title { font-family: "Noto Sans TC", sans-serif; font-size: 15px; font-weight: 700; color: var(--ink); margin: 26px 0 10px; letter-spacing: 0; }
+.work .points-title { font-family: var(--w-sans); font-size: 15px; font-weight: 700; color: var(--ink); margin: 26px 0 10px; letter-spacing: 0; }
 .work .points { margin: 0 0 24px; padding-left: 1.2em; max-width: var(--measure); font-size: 15px; color: var(--ink-soft); }
 .work .points li { margin: 0 0 6px; }
 .work .points strong { color: var(--moss); font-weight: 700; }
@@ -175,14 +177,14 @@
 .work #appsheet .lede { margin: 0 0 4px; font-size: 14.5px; }
 .work .offers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
 .work .offer { background: var(--bg); padding: 16px 18px 18px; }
-.work .offer h4 { font-family: "Noto Sans TC", sans-serif; font-size: 14.5px; font-weight: 700; color: var(--moss); margin: 0 0 6px; line-height: 1.5; }
+.work .offer h4 { font-family: var(--w-sans); font-size: 14.5px; font-weight: 700; color: var(--moss); margin: 0 0 6px; line-height: 1.5; }
 .work .offer p { margin: 0; font-size: 13.5px; line-height: 1.7; color: var(--ink-soft); }
 .work .offer-note { margin: 12px 0 0; font-size: 13.5px; color: var(--ink-soft); }
 .work .offer-note strong { color: var(--ink); }
 
 /* folded extra information (AppSheet details, the rest of the projects) */
 .work details.more-info { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 12px; }
-.work details.more-info > summary { cursor: pointer; font-family: "Noto Sans TC", sans-serif; font-size: 14.5px; font-weight: 700; color: var(--ink); list-style: none; padding: 4px 0; }
+.work details.more-info > summary { cursor: pointer; font-family: var(--w-sans); font-size: 14.5px; font-weight: 700; color: var(--ink); list-style: none; padding: 4px 0; }
 .work details.more-info > summary::-webkit-details-marker { display: none; }
 .work details.more-info > summary::before { content: "＋"; display: inline-block; width: 1.4em; color: var(--accent); font-weight: 400; }
 .work details.more-info[open] > summary::before { content: "－"; }
@@ -200,3 +202,5 @@
   .work .system { flex: 0 0 78%; scroll-snap-align: start; }
   .work .offer { padding: 12px 14px 14px; }
 }
+
+html[lang="ja"] .work { --w-sans: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; --w-serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif; }

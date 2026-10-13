@@ -1,41 +1,29 @@
-/* Header drop-downs (工作 > AppSheet, and the language menu): open on hover / focus (CSS) and with the button on touch screens. */
+/* Language menu in the header: a button that opens a small list; closes on a click elsewhere, on Escape, or after choosing. */
 (function () {
-  var items = Array.prototype.slice.call(document.querySelectorAll('.topnav .has-sub'));
-  if (!items.length) return;
+  var box = document.querySelector('.lang-switch');
+  if (!box) return;
+  var btn = box.querySelector('.lang-toggle');
+  var list = box.querySelector('.lang-list');
+  if (!btn || !list) return;
+  box.classList.add('js');
 
-  function reset(li) {
-    var sub = li.querySelector('.sub');
-    if (sub) { sub.style.left = ''; sub.style.right = ''; }
+  function place() {                               // keep the list on the screen
+    list.style.left = ''; list.style.right = '';
+    var r = list.getBoundingClientRect();
+    if (r.left < 8) { list.style.left = '0'; list.style.right = 'auto'; }
+    else if (r.right > window.innerWidth - 8) { list.style.left = 'auto'; list.style.right = '0'; }
   }
-  function closeAll(except) {
-    items.forEach(function (li) {
-      if (li === except) return;
-      var b = li.querySelector('.sub-btn');
-      li.classList.remove('open');
-      reset(li);
-      if (b) b.setAttribute('aria-expanded', 'false');
-    });
+  function setOpen(open, returnFocus) {
+    box.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) place();
+    if (!open && returnFocus) btn.focus();
   }
-  function keepOnScreen(li) {                     // a menu that would run off the screen edge is aligned to its button instead
-    var sub = li.querySelector('.sub');
-    if (!sub) return;
-    reset(li);
-    var r = sub.getBoundingClientRect();
-    if (r.left < 8) { sub.style.left = '0'; sub.style.right = 'auto'; }
-    else if (r.right > window.innerWidth - 8) { sub.style.left = 'auto'; sub.style.right = '0'; }
-  }
-
-  items.forEach(function (li) {
-    var b = li.querySelector('.sub-btn');
-    if (!b) return;
-    b.addEventListener('click', function (ev) {
-      ev.stopPropagation();
-      var open = li.classList.toggle('open');
-      b.setAttribute('aria-expanded', open ? 'true' : 'false');
-      closeAll(li);
-      if (open) keepOnScreen(li);
-    });
+  btn.addEventListener('click', function (ev) {
+    ev.stopPropagation();
+    setOpen(!box.classList.contains('open'));
   });
-  document.addEventListener('click', function (ev) { if (!ev.target.closest('.has-sub')) closeAll(); });
-  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeAll(); });
+  document.addEventListener('click', function (ev) { if (!box.contains(ev.target)) setOpen(false); });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && box.classList.contains('open')) setOpen(false, true); });
+  window.addEventListener('resize', function () { if (box.classList.contains('open')) place(); });
 })();

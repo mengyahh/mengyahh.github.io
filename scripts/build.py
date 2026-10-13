@@ -19,6 +19,8 @@ from collections import OrderedDict
 import mdcontent
 import work
 
+WORK_LANGS = [l for l in ('zh', 'en', 'ja') if work.has_content(l)]      # languages that have a 工作 / Work / 仕事 section
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SITE = 'https://mengyahh.com'
 SITE_DESC = '萌芽的個人網站：料理紀錄、部落格文章與工作。'      # home page <meta description>
@@ -95,7 +97,7 @@ STRINGS = {
         kw='Keywords', post_nav='Previous and next posts', newer='Newer post →', older='← Older post', views='{n} views',
         home_title='Sprouting. · mengyahh', home_desc="Meng Ya's personal site: cooking notes, blog posts and work.",
         home_all_posts='All posts →', home_all='All →', home_cooking_desc="What I've cooked, thoughts and photos.",
-        home_more='Read more →', home_go='Read more (in Chinese) →',
+        home_more='Read more →', home_go='Read more →',
         home_about_desc="Living in Chiayi County, still adjusting to my new life.<br>I spent June 2025 to June 2026 on a working holiday in Japan, and I'm working hard to catch up on writing it all down.",
         home_work_desc="A freelancer of five years with an unconventional career. If you only look at the final output, it's often hard to tell what my expertise actually is, and it can look like I just do odd jobs.<br>What I offer is part consultant, part companion, and also the doing: I first understand what you need and find the real pain points, then we talk through what to make and how, in a one-stop service of “analysis → planning → making”.",
         work_menu='Open the Work menu', lang_menu='Language',
@@ -119,7 +121,7 @@ STRINGS = {
         kw='キーワード', post_nav='前後の記事', newer='新しい記事 →', older='← 古い記事', views='{n} 回閲覧',
         home_title='芽吹き中。 · mengyahh', home_desc='Meng Ya の個人サイト：料理記録、ブログ、仕事のこと。',
         home_all_posts='すべての記事 →', home_all='すべて →', home_cooking_desc='作ったもの、感想、写真。',
-        home_more='もっと見る →', home_go='もっと見る（中国語）→',
+        home_more='もっと見る →', home_go='もっと見る →',
         home_about_desc='嘉義県に住んでいます。新しい暮らしに、まだ慣れている途中です。<br>2025年6月〜2026年6月は日本でワーキングホリデー。いま、その記録を一生懸命書き足しています。',
         home_work_desc='フリーランス歴5年の、ちょっと変わった働き方をしています。最終的な成果物だけを見ると、私の専門が何なのかわかりにくくて、なんでも屋に見えるかもしれません。<br>私の仕事は、コンサルタントであり、伴走者であり、実行役でもあります。まず必要なことを理解して、本当の困りごとを見つけてから、何をどう作るかを話し合い、「分析→企画→制作」をまるごとお引き受けします。',
         work_menu='仕事メニューを開く', lang_menu='言語',
@@ -173,34 +175,30 @@ def jsonld(*objs):
 def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=None, og_type='website',
            extra_head='', structured=(), alts=None):
     """Shared page shell. `base` is the relative prefix back to the site root ('', '../' or '../../')."""
-    work_href = f'{base}{UP}work/'
+    work_href = f'{base}work/' if LANG in WORK_LANGS else f'{base}{UP}work/'
     nav = [
-        (S['nav_about'], f'{base}about/', 'about', None),
-        (S['nav_work'], work_href, 'work', None),
-        (S['nav_cooking'], f'{base}cooking/', 'cooking', None),
-        (S['nav_blog'], f'{base}blog/', 'blog', None),
+        (S['nav_about'], f'{base}about/', 'about'),
+        (S['nav_work'], work_href, 'work'),
+        (S['nav_cooking'], f'{base}cooking/', 'cooking'),
+        (S['nav_blog'], f'{base}blog/', 'blog'),
     ]
     items = []
-    for label, href, key, sub in nav:
+    for label, href, key in nav:
         cur = ' aria-current="page"' if key == current else ''
-        if sub:
-            subs = ''.join(f'<li><a href="{esc(h)}">{esc(t)}</a></li>' for t, h in sub)
-            items.append(f'<li class="has-sub"><a href="{esc(href)}"{cur}>{label}</a>'
-                         f'<button type="button" class="sub-btn" aria-label="{esc(S["work_menu"])}" aria-expanded="false" aria-controls="sub-{key}"><span aria-hidden="true">▾</span></button>'
-                         f'<ul class="sub" id="sub-{key}">{subs}</ul></li>')
-        else:
-            items.append(f'<li><a href="{esc(href)}"{cur}>{label}</a></li>')
+        items.append(f'<li><a href="{esc(href)}"{cur}>{label}</a></li>')
     alts = [l for l in (alts or LANGS)]
     if len(alts) > 1:
         lang_items = ''.join(
             f'<li><a href="{prefix(l)}{path}" hreflang="{HTML_LANG[l]}" lang="{HTML_LANG[l]}"' + (' aria-current="true"' if l == LANG else '') + f'>{LANG_NAME[l]}</a></li>'
             for l in alts)
-        globe = ('<svg class="globe" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" '
+        globe = ('<svg class="globe" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" '
                  'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19"/>'
                  '<path d="M12 2.5c2.8 2.6 4.2 5.8 4.2 9.5s-1.4 6.9-4.2 9.5c-2.8-2.6-4.2-5.8-4.2-9.5S9.2 5.1 12 2.5z"/></svg>')
-        items.append(f'<li class="has-sub langs-menu"><button type="button" class="sub-btn lang-btn" aria-expanded="false" aria-controls="sub-lang" '
-                     f'aria-label="{esc(S["lang_menu"])}: {esc(LANG_NAME[LANG])}">{globe}<span>{LANG_NAME[LANG]}</span><span class="caret" aria-hidden="true">▾</span></button>'
-                     f'<ul class="sub" id="sub-lang">{lang_items}</ul></li>')
+        chev = ('<svg class="chev" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" '
+                'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>')
+        items.append(f'<li class="lang-switch"><button type="button" class="lang-toggle" aria-expanded="false" aria-controls="lang-list" '
+                     f'aria-label="{esc(S["lang_menu"])}: {esc(LANG_NAME[LANG])}">{globe}<span class="lang-name">{LANG_NAME[LANG]}</span>{chev}</button>'
+                     f'<ul class="lang-list" id="lang-list">{lang_items}</ul></li>')
     hreflang = ''.join(f'<link rel="alternate" hreflang="{HTML_LANG[l]}" href="{SITE}{prefix(l)}{path}">' for l in alts) if len(alts) > 1 else ''
     if hreflang:
         hreflang += f'<link rel="alternate" hreflang="x-default" href="{SITE}{path}">'
@@ -571,6 +569,7 @@ def build_post(a, newer, older, alts=None):
 # ------------------------------------------------------------------ home / misc
 
 def build_home(entries, articles):
+    work_rel = 'work/' if LANG in WORK_LANGS else f'{UP}work/'
     latest = [im for e in entries for im in e['images']][:4]
     thumbs = ''.join(
         f'<a href="cooking/"><img src="{UP}assets/cooking/{im["thumb"]}" width="{im["w"]}" height="{im["h"]}" alt="" loading="lazy"></a>'
@@ -597,7 +596,7 @@ def build_home(entries, articles):
       <p class="sec-desc">{S['home_about_desc']}</p>
     </section>
     <section class="home-sec">
-      <div class="sec-head"><h2 class="serif"><a href="{UP}work/">{S['nav_work']}</a></h2><a class="sec-more" href="{UP}work/">{S['home_go']}</a></div>
+      <div class="sec-head"><h2 class="serif"><a href="{work_rel}">{S['nav_work']}</a></h2><a class="sec-more" href="{work_rel}">{S['home_go']}</a></div>
       <p class="sec-desc">{S['home_work_desc']}</p>
     </section>
   </div>
@@ -741,13 +740,18 @@ if __name__ == '__main__':
         write(OUT + 'about/index.html', build_about(abouts[lang]))
         write('assets/data/' + search_file(), build_search_index(l_articles))
     set_lang('zh')
-    work_pages = work.build_all()
-    for wp in work_pages:
-        og = wp.get('og_image')
-        write(wp['path'], layout(base='../' * wp['depth'], title=wp['title'], desc=wp['desc'], path='/' + wp['path'].replace('index.html', ''),
-                                 body=wp['body'], current='work', css=wp['css'], js=wp['js'], alts=['zh'],
-                                 og_image=(SITE + og) if og else None), quiet=True)
-    print('wrote', len(work_pages), 'pages under /work/')
+    all_work = {lang: work.build_all(lang) for lang in WORK_LANGS}
+    work_pages = [p for lang in WORK_LANGS for p in all_work[lang]]
+    for lang in WORK_LANGS:
+        set_lang(lang)
+        for wp in all_work[lang]:
+            have = [l for l in WORK_LANGS if any(x['lpath'] == wp['lpath'] for x in all_work[l])]
+            og = wp.get('og_image')
+            write(wp['path'], layout(base='../' * wp['depth'], title=wp['title'], desc=wp['desc'], path=wp['lpath'],
+                                     body=wp['body'], current='work', css=wp['css'], js=wp['js'], alts=have,
+                                     og_image=(SITE + og) if og else None), quiet=True)
+    set_lang('zh')
+    print('wrote', len(work_pages), 'pages under /work/ (' + ', '.join(f'{l}: {len(all_work[l])}' for l in WORK_LANGS) + ')')
     for path, target in MOVED.items():
         write(path.strip('/') + '/index.html', build_redirect(target), quiet=True)
     print('wrote', len(MOVED), 'redirects for the moved portfolio')

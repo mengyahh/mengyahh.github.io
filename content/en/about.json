@@ -58,7 +58,7 @@
     },
     {
      "type": "p",
-     "html": "You can see what I offer and the projects I've done on the <a href=\"/work/\">work page</a> (in Chinese), or <a href=\"mailto:mengyahh@gmail.com\">just write to me</a> for a chat."
+     "html": "You can see what I offer and the projects I've done on the <a href=\"/en/work/\">work page</a>, or <a href=\"mailto:mengyahh@gmail.com\">just write to me</a> for a chat."
     }
    ]
   }
@@ -66,7 +66,7 @@
  "buttons": [
   {
    "label": "portfolio",
-   "href": "/work/#projects"
+   "href": "/en/work/#projects"
   },
   {
    "label": "cooking notes",

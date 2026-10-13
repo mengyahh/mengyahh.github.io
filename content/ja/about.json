@@ -58,7 +58,7 @@
     },
     {
      "type": "p",
-     "html": "具体的なサービスの内容や、これまでのプロジェクトは<a href=\"/work/\">仕事のページ</a>（中国語）で見られます。<a href=\"mailto:mengyahh@gmail.com\">メールで直接</a>相談してもらってもかまいません。"
+     "html": "具体的なサービスの内容や、これまでのプロジェクトは<a href=\"/ja/work/\">仕事のページ</a>で見られます。<a href=\"mailto:mengyahh@gmail.com\">メールで直接</a>相談してもらってもかまいません。"
     }
    ]
   }
@@ -66,7 +66,7 @@
  "buttons": [
   {
    "label": "ポートフォリオ",
-   "href": "/work/#projects"
+   "href": "/ja/work/#projects"
   },
   {
    "label": "料理記録",

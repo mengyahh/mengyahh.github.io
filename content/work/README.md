@@ -150,6 +150,23 @@ status_style: open                    ← （選填）標籤用強調色
 
 新增作品：複製一個現有的 `.md` 改內容（最好保持同樣的區塊：適用對象、功能卡片、結尾方塊），首頁卡片與 AppSheet 總覽頁的清單會自動多一項；導覽列下拉選單要到 `scripts/build.py` 的 `nav_html()` 加上。所有作品的規格要一致。首頁本身現在也是 Markdown（`content/work/about.md`）。
 
+## 英文版與日文版
+
+英文放在 `content/work/en/`、日文放在 `content/work/ja/`，結構和中文一樣：
+
+```
+content/work/en/about.md           工作頁（/en/work/）；::: appsheet 那一行的位置、區塊順序都跟中文版一致
+content/work/en/appsheet.md        AppSheet 區塊
+content/work/en/products/*.md      四個作品頁（檔名跟中文版相同）
+content/work/ja/...                日文版，結構相同
+```
+
+- 作品集頁（`portfolio/`）只有中文；英日文版的專案連結直接連到中文頁，連結文字標示「（in Chinese／中国語）」。
+- 缺哪個檔就不會產生那一頁；語言切換只會列出有該頁的語言。
+- 英日文版的 App 畫面：把截圖放進 `assets/work/screenshots/en/` 或 `assets/work/screenshots/ja/`，檔名跟中文版同名，就會自動取代中文介面的截圖。
+- 頁面上的固定文字（「適用對象」「了解更多」「複製 email」等）在 `scripts/work.py` 最上面的 `STR`。
+- 中文內容改了，英日文版要一併更新，不然三個語言的說法會不一致。
+
 ## 出錯時
 
 `preview.py` / `build.py` 會直接說是哪個檔案、哪裡有問題（例如找不到圖片、區塊類型打錯）。
