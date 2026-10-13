@@ -23,6 +23,9 @@ It's a one-off purchase, not a subscription. The actual quote depends on what yo
 ### Where is my data? Can I export it?
 Your data stays in your own Google account (Google Sheets). You can download and move it freely, and it's easy to export.
 
+### Can you help me bring my existing data into the system?
+Yes. I can help sort out your existing data (records in Excel or Google Sheets, for example) and bring it into the system, so you don't have to type everything in again. Write to me and tell me what your data looks like, and we'll talk about how.
+
 ### Can an existing work be changed?
 Yes. If an existing work mostly fits, I can adjust it for an extra fee, and then you buy it outright. If it doesn't fit at all, I can build a new system from scratch.
 
