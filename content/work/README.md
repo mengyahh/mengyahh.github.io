@@ -150,6 +150,31 @@ status_style: open                    ← （選填）標籤用強調色
 
 新增作品：複製一個現有的 `.md` 改內容（最好保持同樣的區塊：適用對象、功能卡片、結尾方塊），首頁卡片與 AppSheet 總覽頁的清單會自動多一項；導覽列下拉選單要到 `scripts/build.py` 的 `nav_html()` 加上。所有作品的規格要一致。首頁本身現在也是 Markdown（`content/work/about.md`）。
 
+## 獨立的 AppSheet 頁面（/appsheet/）
+
+給「搜尋 AppSheet 客製化、管理系統」的人看的一頁式頁面，**網站名稱和導覽列都不顯示**（只有語言選單），也沒有放在首頁或導覽列裡。四個作品頁（`/appsheet/invoice/` 等）用同樣的簡潔版頭。
+
+- 服務內容（提供方式、既有作品卡片、誰適合、功能與特色）直接用 `appsheet.md` 的內容，跟 `/work/` 的 AppSheet 區塊是同一份，改一處兩邊都會變。
+- 頁面自己的部分寫在 `content/work/appsheet-page.md`（英日文版在 `en/`、`ja/` 底下）：
+
+```
+---
+title: AppSheet 客製化管理系統開發    ← 頁面標題（也是瀏覽器分頁與搜尋結果的標題）
+eyebrow: AppSheet
+headline: 一句話主張，**粗體**會變綠色
+nav: 提供方式 | 既有作品 | 誰適合 | 功能與特色 | 關於製作人 | 聯絡   ← 頁內導覽的六個標籤，順序固定
+description: 搜尋結果下面的簡介（盡量帶入大家會搜尋的字）
+---
+
+::: about 關於製作人               ← 結尾的簡短自我介紹
+段落……
+
+=> [認識我還能做什麼 →](/work/)    ← 連回工作頁的按鈕
+:::
+```
+
+- 舊網址 `/work/appsheet/…` 保留轉址，會轉到 `/appsheet/…`。
+
 ## 英文版與日文版
 
 英文放在 `content/work/en/`、日文放在 `content/work/ja/`，結構和中文一樣：

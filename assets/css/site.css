@@ -112,3 +112,10 @@ h1, h2, h3 { text-wrap: balance; }
   .topbar .wrap { position: relative; }
   .lang-switch { position: absolute; top: 10px; right: 18px; margin: 0; }
 }
+
+/* stand-alone pages (/appsheet/): no site name, no navigation; only the language menu, at the right */
+.topbar.slim .wrap { justify-content: flex-end; }
+@media (max-width: 640px) {
+  .topbar.slim .wrap { flex-direction: row; align-items: center; }
+  .topbar.slim .lang-switch { position: static; }
+}

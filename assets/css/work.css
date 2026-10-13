@@ -204,3 +204,12 @@
 }
 
 html[lang="ja"] .work { --w-sans: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; --w-serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif; }
+
+/* "about the maker" on the stand-alone AppSheet page: short, at the end */
+.work .maker { display: flex; gap: 28px; align-items: flex-start; }
+.work .maker-photo { flex: none; width: 104px; height: 104px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); background: var(--surface); }
+.work .maker-text { max-width: var(--measure); }
+.work .maker-text p { margin: 0 0 12px; font-size: 15px; color: var(--ink-soft); }
+.work .maker-text .maker-link { margin: 16px 0 0; }
+.work .maker-text .maker-link .cta-btn { margin: 0; }
+@media (max-width: 600px) { .work .maker { flex-direction: column; gap: 16px; } }

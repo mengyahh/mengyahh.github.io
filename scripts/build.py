@@ -173,7 +173,7 @@ def jsonld(*objs):
 
 
 def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=None, og_type='website',
-           extra_head='', structured=(), alts=None):
+           extra_head='', structured=(), alts=None, slim=False):
     """Shared page shell. `base` is the relative prefix back to the site root ('', '../' or '../../')."""
     work_href = f'{base}work/' if LANG in WORK_LANGS else f'{base}{UP}work/'
     nav = [
@@ -183,7 +183,7 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
         (S['nav_blog'], f'{base}blog/', 'blog'),
     ]
     items = []
-    for label, href, key in nav:
+    for label, href, key in (() if slim else nav):         # slim: a stand-alone landing page has only the site name and the language menu
         cur = ' aria-current="page"' if key == current else ''
         items.append(f'<li><a href="{esc(href)}"{cur}>{label}</a></li>')
     alts = [l for l in (alts or LANGS)]
@@ -215,6 +215,10 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
         analytics = (f'<script data-goatcounter="https://{GOATCOUNTER}.goatcounter.com/count" '
                      f'async src="//gc.zgo.at/count.js"></script>')
         stats_note = f'<p class="copy">{S["stats"]}</p>'
+    footer_links = '' if slim else (f'<div class="links"><a href="{INSTAGRAM}" rel="noopener">Instagram ↗</a>'
+                                    f'<a href="{base}blog/">{S["nav_blog"]}</a></div>')
+    copy_line = '' if slim else f'<p class="copy">{S["copy"]}</p>'
+    wordmark = '' if slim else f'<p class="wordmark"><a href="{base or './'}">{S["wm"]}<span>{S["dot"]}</span></a></p>'
     return f'''<!DOCTYPE html>
 <html lang="{HTML_LANG[LANG]}">
 <head>
@@ -236,9 +240,9 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
 </head>
 <body>
 <a class="skip" href="#main">{S['skip']}</a>
-<header class="topbar">
+<header class="topbar{' slim' if slim else ''}">
   <div class="wrap">
-    <p class="wordmark"><a href="{base or './'}">{S['wm']}<span>{S['dot']}</span></a></p>
+    {wordmark}
     <nav aria-label="{S['main_nav']}"><ul class="topnav">{''.join(items)}</ul></nav>
   </div>
 </header>
@@ -248,11 +252,8 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
 <footer>
   <div class="wrap">
     <p>{S['foot_contact']}<a href="mailto:{EMAIL}">{EMAIL}</a></p>
-    <div class="links">
-      <a href="{INSTAGRAM}" rel="noopener">Instagram ↗</a>
-      <a href="{base}blog/">{S['nav_blog']}</a>
-    </div>
-    <p class="copy">{S['copy']}</p>
+    {footer_links}
+    {copy_line}
     {stats_note}
   </div>
 </footer>
@@ -657,18 +658,18 @@ MOVED = {
     '/portfolio/': '/work/#projects',
     '/portfolio/lecheng/': '/work/portfolio/lecheng/',
     '/portfolio/daodu-hexi/': '/work/portfolio/daodu-hexi/',
-    '/work/appsheet/': '/work/#appsheet',          # the AppSheet overview is a section of /work/ now
+    '/work/appsheet/': '/appsheet/',               # the AppSheet page lives at /appsheet/
 }
 
 
 def build_redirect(target):
     t = esc(target)
     canonical = SITE + (target.split('#')[0] or '/')
-    return (f'<!doctype html>\n<html lang="zh-Hant">\n<head>\n<meta charset="utf-8">\n<title>已搬到工作頁</title>\n'
+    return (f'<!doctype html>\n<html lang="zh-Hant">\n<head>\n<meta charset="utf-8">\n<title>頁面已搬家</title>\n'
             f'<meta name="robots" content="noindex">\n'
             f'<link rel="canonical" href="{esc(canonical)}">\n<meta http-equiv="refresh" content="0; url={t}">\n'
             f'<meta name="viewport" content="width=device-width,initial-scale=1">\n</head>\n<body>\n'
-            f'<p>這個頁面已經搬到工作頁：<a href="{t}">{t}</a></p>\n</body>\n</html>\n')
+            f'<p>這個頁面已經搬到新的位置：<a href="{t}">{t}</a></p>\n</body>\n</html>\n')
 
 
 def build_sitemap(langdata, work_pages=()):
@@ -744,13 +745,25 @@ if __name__ == '__main__':
         for wp in all_work[lang]:
             have = [l for l in WORK_LANGS if any(x['lpath'] == wp['lpath'] for x in all_work[l])]
             og = wp.get('og_image')
+            svc = ()
+            if wp.get('service'):
+                svc = ({'@context': 'https://schema.org', '@type': 'Service', 'name': wp['service'], 'description': wp['desc'],
+                        'serviceType': 'AppSheet custom application development', 'inLanguage': HTML_LANG[lang], 'url': SITE + wp['url'],
+                        'provider': {'@type': 'Person', 'name': AUTHORS[lang], 'url': SITE + prefix(lang) + '/'}},)
             write(wp['path'], layout(base='../' * wp['depth'], title=wp['title'], desc=wp['desc'], path=wp['lpath'],
-                                     body=wp['body'], current='work', css=wp['css'], js=wp['js'], alts=have,
-                                     og_image=(SITE + og) if og else None), quiet=True)
+                                     body=wp['body'], current=None if wp.get('slim') else 'work', css=wp['css'], js=wp['js'], alts=have,
+                                     og_image=(SITE + og) if og else None, slim=bool(wp.get('slim')), structured=svc), quiet=True)
     set_lang('zh')
     print('wrote', len(work_pages), 'pages under /work/ (' + ', '.join(f'{l}: {len(all_work[l])}' for l in WORK_LANGS) + ')')
     for path, target in MOVED.items():
         write(path.strip('/') + '/index.html', build_redirect(target), quiet=True)
+    for lang in WORK_LANGS:                      # the four works moved from /work/appsheet/<slug>/ to /appsheet/<slug>/
+        for wp in all_work[lang]:
+            if wp['lpath'].startswith('/appsheet/') and wp['lpath'] != '/appsheet/':
+                old = f"{'' if lang == 'zh' else lang + '/'}work{wp['lpath']}index.html"
+                write(old, build_redirect(wp['url']), quiet=True)
+        if lang != 'zh':
+            write(f'{lang}/work/appsheet/index.html', build_redirect(f'/{lang}/appsheet/'), quiet=True)
     print('wrote', len(MOVED), 'redirects for the moved portfolio')
     write('sitemap.xml', build_sitemap(langdata, work_pages))
     write('robots.txt', f'User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n')

@@ -357,7 +357,7 @@ def work_cards():
     rows = ''
     for _, slug, pm, _, _ in product_files():
         who = f'        <p class="sys-for">{S["for_"]}{M.inline(pm["for"])}</p>{NL}' if pm.get('for') else ''
-        href = f'{P}/work/appsheet/{slug}/'
+        href = f'{P}/appsheet/{slug}/'
         rows += (f'      <article class="system" id="{slug}">{NL}        <h3><a href="{href}">{M.inline(pm.get("title", slug))}</a></h3>{NL}{who}'
                  f'        <p>{M.inline(pm.get("summary", ""))}</p>{NL}'
                  f'        <p class="sys-more"><a href="{href}">{S["more"]}</a></p>{NL}      </article>{NL}')
@@ -386,12 +386,80 @@ def build_products(contact):
                 raise SystemExit(f'content/work/products/{name}: unknown block "::: {typ}" (known: features, screens, note, callout)')
         inner = (f'<section class="product">\n  <div class="wrap">\n    <div class="page-head"><p class="eyebrow">{M.esc(meta.get("eyebrow", ""))}</p>\n'
                  f'    <h1>{M.inline(title)}</h1></div>\n{for_line}    <div class="prose">{intro}</div>\n{"".join(parts)}'
-                 f'    <p class="back"><a href="{P}/work/#appsheet">{S["back_appsheet"]}</a></p>\n  </div>\n</section>\n\n{contact}')
+                 f'    <p class="back"><a href="{P}/appsheet/">{S["back_appsheet"]}</a></p>\n  </div>\n</section>\n\n{contact}')
         shot = re.search(r'!\[[^\]]*\]\(([^)\s"]+)', body)
-        pages.append({'path': f'{LANGDIR}work/appsheet/{slug}/index.html', 'url': f'{P}/work/appsheet/{slug}/', 'lpath': f'/work/appsheet/{slug}/',
-                      'title': f'{title} · {S["site"]}', 'desc': meta.get('description') or title, 'body': local_links(inner), 'depth': 3,
-                      'css': ('work',), 'js': (), 'og_image': screenshot(shot.group(1)) if shot else None})
+        pages.append({'path': f'{LANGDIR}appsheet/{slug}/index.html', 'url': f'{P}/appsheet/{slug}/', 'lpath': f'/appsheet/{slug}/',
+                      'title': title, 'desc': meta.get('description') or title, 'body': local_links(inner), 'depth': 2,
+                      'css': ('work',), 'js': (), 'slim': True, 'og_image': screenshot(shot.group(1)) if shot else None})
     return pages
+
+
+def build_appsheet_page(contact):
+    """/appsheet/ : a one-page version of the AppSheet services for people who search for it (the same texts as the AppSheet
+    section of /work/, written in appsheet.md), plus a short "about the maker" section that links back to /work/."""
+    pm, ptext = read('appsheet-page.md')
+    meta, body = read('appsheet.md')
+    first = body.find(':::')
+    intro_text, rest = (body, '') if first < 0 else (body[:first], body[first:])
+    lede = ''.join(f'<p class="lede">{M.inline(r)}</p>' for k, r in M.blocks(intro_text) if k == 'p')
+    headline = re.sub(r'\*\*(.+?)\*\*', r'<span class="ask">\1</span>', M.esc(pm.get('headline', '')))
+    title = pm.get('title', meta.get('title', 'AppSheet'))
+    cta = M.esc(pm.get('cta') or meta.get('cta', S['cta']))
+    parts = [f'<header class="hero" id="top">\n  <div class="wrap">\n    <div class="page-head"><p class="eyebrow">{M.esc(pm.get("eyebrow", "AppSheet"))}</p>\n'
+             f'    <h1>{M.esc(title)}</h1></div>\n    <p class="statement">{headline}</p>\n    {lede}\n'
+             f'    <p class="cta-line"><a class="cta-btn" href="#contact">{cta}</a></p>\n  </div>\n</header>\n']
+    labels = [x.strip() for x in pm.get('nav', '').split('|') if x.strip()]
+    ids = ['services', 'works', 'fit', 'what', 'about', 'contact']
+    sections, n = [], 0
+
+    def add(sid, inner):
+        nonlocal n
+        label = labels[ids.index(sid)] if len(labels) == len(ids) else sid
+        sections.append((sid, label))
+        parts.append(section(sid, label, inner))
+        n += 1
+    folded_ids = ['fit', 'what']
+    for typ, args, dbody in M.directives(rest):
+        head = f'    <h2>{M.inline(args)}</h2>\n'
+        if typ == 'offers':
+            cards, notes = '', ''
+            for kind, raw in M.blocks(dbody):
+                if kind == 'ul':
+                    for item in M.list_items(raw):
+                        m = re.match(r'^\*\*(.+?)\*\*\s*(.*)$', item)
+                        label, text = (m.group(1).rstrip('：:'), m.group(2)) if m else (item, '')
+                        cards += f'      <div class="offer"><h4>{M.inline(label)}</h4><p>{M.inline(text)}</p></div>\n'
+                elif kind == 'p':
+                    notes += f'    <p class="offer-note">{M.inline(raw)}</p>\n'
+            add('services', head + f'    <div class="offers">\n{cards}    </div>\n{notes}')
+        elif typ == 'systems':
+            lead_p = ''.join(f'    <p class="lede">{M.inline(raw)}</p>\n' for kind, raw in M.blocks(dbody) if kind == 'p')
+            add('works', head + lead_p + work_cards())
+        elif typ == 'details':
+            lis = ''.join(f'      <li>{M.inline(i)}</li>\n' for kind, raw in M.blocks(dbody) if kind == 'ul' for i in M.list_items(raw))
+            add(folded_ids.pop(0), head + f'    <ul class="points">\n{lis}    </ul>\n')
+    # about the maker
+    for typ, args, dbody in M.directives(ptext):
+        if typ != 'about':
+            continue
+        paras = ''.join(f'      <p>{M.inline(raw)}</p>\n' for kind, raw in M.blocks(dbody) if kind == 'p' and not raw.startswith('=>'))
+        link = ''
+        for kind, raw in M.blocks(dbody):
+            lm = re.match(r'=>\s*\[([^\]]+)\]\(([^)\s]+)\)', raw)
+            if lm:
+                link = f'      <p class="maker-link"><a class="cta-btn secondary" href="{lm.group(2)}">{M.esc(lm.group(1))}</a></p>\n'
+        photo = ''
+        if pm.get('photo'):
+            w, h = M.image_size(os.path.join(ROOT, 'assets', pm['photo']))
+            photo = f'    <img class="maker-photo" src="/assets/{pm["photo"]}" width="{w}" height="{h}" alt="" loading="lazy" decoding="async">\n'
+        add('about', f'    <h2>{M.inline(args)}</h2>\n    <div class="maker">\n{photo}      <div class="maker-text">\n{paras}{link}      </div>\n    </div>\n')
+    parts.append(contact)
+    sections.append(('contact', labels[-1] if len(labels) == len(ids) else S['contact']))
+    nav_html = ''.join(f'<a href="#{i}">{M.esc(t)}</a>' for i, t in sections)
+    parts.insert(1, f'<nav class="page-nav" aria-label="{S["page_nav"]}"><div class="wrap">{nav_html}</div></nav>\n')
+    return {'path': f'{LANGDIR}appsheet/index.html', 'url': f'{P}/appsheet/', 'lpath': '/appsheet/', 'title': title,
+            'desc': pm.get('description') or meta.get('description', ''), 'body': local_links('\n'.join(parts)), 'depth': 1,
+            'css': ('work',), 'js': (), 'slim': True, 'service': title, 'og_image': asset('screenshots/shot-消費分析.png')}
 
 
 def render_appsheet():
@@ -513,7 +581,7 @@ def build_all(lang='zh'):
     <div class="work">), depth, css, js."""
     set_lang(lang)
     about, contact = build_about()
-    pages = [about] + build_products(contact)
+    pages = [about, build_appsheet_page(contact)] + build_products(contact)
     if os.path.isdir(os.path.join(CONTENT, 'portfolio')):
         pages += build_portfolio(contact)
     for p in pages:
