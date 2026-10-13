@@ -116,6 +116,4 @@ Work
 ## 先來聊聊吧
 
 說說你遇到的狀況，我們再一起決定要做什麼。
-
-- [Instagram ↗](https://www.instagram.com/mengyahh)
 :::
