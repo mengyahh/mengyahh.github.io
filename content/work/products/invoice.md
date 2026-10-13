@@ -1,7 +1,7 @@
 ---
 title: 內部請款系統
 eyebrow: 作品 · 組織內部管理
-order: 1
+order: 2
 for: 一人公司、微型組織、中小型組織
 summary: 同仁線上申請請款、產生請款單 PDF，財會人員直接取得匯款資料
 status: 作品

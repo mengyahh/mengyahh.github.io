@@ -1,7 +1,7 @@
 ---
 title: Internal Payment Request System
 eyebrow: Existing work · Internal admin
-order: 1
+order: 2
 for: One-person companies, micro and small-to-mid-sized organisations
 summary: Staff file payment requests online and a PDF request form is generated; finance gets the payee details right away
 status: Existing work

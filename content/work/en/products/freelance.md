@@ -1,7 +1,7 @@
 ---
 title: Freelancer Income & Expense System
 eyebrow: Existing work · Freelance project management
-order: 2
+order: 1
 for: Freelancers, contract workers, people with several sources of income, people who spend in several currencies
 summary: Project tracking, working hours, multi-currency bookkeeping and charts, all in one tool
 status: Existing work
