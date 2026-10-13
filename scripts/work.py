@@ -354,14 +354,15 @@ def product_files():
     return sorted(works, key=lambda w: w[0])
 
 
-def work_cards():
-    """The same card for every work: title, who it suits, one-line summary."""
+def work_cards(summary=True):
+    """The same card for every work: title, who it suits, one-line summary (the summary can be left out)."""
     rows = ''
     for _, slug, pm, _, _ in product_files():
         who = f'        <p class="sys-for">{S["for_"]}{M.inline(pm["for"])}</p>{NL}' if pm.get('for') else ''
+        text = f'        <p>{M.inline(pm.get("summary", ""))}</p>{NL}' if summary else ''
         href = f'{P}/appsheet/{slug}/'
         rows += (f'      <article class="system" id="{slug}">{NL}        <h3><a href="{href}">{M.inline(pm.get("title", slug))}</a></h3>{NL}{who}'
-                 f'        <p>{M.inline(pm.get("summary", ""))}</p>{NL}'
+                 f'{text}'
                  f'        <p class="sys-more"><a href="{href}">{S["more"]}</a></p>{NL}      </article>{NL}')
     return f'    <div class="systems">{NL}{rows}    </div>{NL}'
 
@@ -436,7 +437,7 @@ def build_appsheet_page(contact):
             add('services', head + f'    <div class="offers">\n{cards}    </div>\n{notes}')
         elif typ == 'systems':
             lead_p = ''.join(f'    <p class="lede">{M.inline(raw)}</p>\n' for kind, raw in M.blocks(dbody) if kind == 'p')
-            add('works', head + lead_p + work_cards())
+            add('works', head + lead_p + work_cards(summary=pm.get('card_summary', 'yes').lower() not in ('no', 'false', '0')))
         elif typ == 'details':
             lis = ''.join(f'      <li>{M.inline(i)}</li>\n' for kind, raw in M.blocks(dbody) if kind == 'ul' for i in M.list_items(raw))
             add(folded_ids.pop(0), head + f'    <ul class="points">\n{lis}    </ul>\n')
