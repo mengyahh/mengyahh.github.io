@@ -1,16 +1,20 @@
 /* 萌芽中。 — mengyahh.com */
 :root {
   color-scheme: light;
-  --bg: #fbf8f1;
-  --surface: #f3eee1;
-  --ink: #262a21;
-  --ink-soft: #5a5f50;
-  --muted: #7c7764;
-  --accent: #4b7a3c;
-  --accent-soft: rgba(75, 122, 60, 0.12);
-  --border: rgba(38, 42, 33, 0.14);
-  --border-strong: rgba(38, 42, 33, 0.3);
-  --shadow: 0 1px 2px rgba(38, 42, 33, 0.06), 0 8px 24px rgba(38, 42, 33, 0.06);
+  /* palette: white ground, green as the main colour (light / deep variants), one red pop colour, neutral greys */
+  --bg: #ffffff;
+  --surface: #f5f7f6;
+  --ink: #252b2d;
+  --ink-soft: #566062;
+  --muted: #7d8688;
+  --accent: #387b5b;
+  --accent-light: #d5e4d9;
+  --accent-soft: rgba(213, 228, 217, 0.55);
+  --deep: #1b4557;
+  --pop: #ca463d;
+  --border: rgba(37, 43, 45, 0.12);
+  --border-strong: rgba(37, 43, 45, 0.28);
+  --shadow: 0 1px 2px rgba(37, 43, 45, 0.06), 0 8px 24px rgba(37, 43, 45, 0.06);
 }
 
 /* comfortable line length: ~46 characters for Chinese / Japanese (1em = one character); ~68 characters for English */
@@ -32,6 +36,7 @@ a { color: var(--accent); text-underline-offset: 3px; }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 .serif, h1, h2, h3, .wordmark { font-family: "Noto Serif TC", "Songti TC", serif; }
+h1, h2, h3 { color: var(--deep); }
 .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace; }
 .wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
 .skip { position: absolute; left: -999px; top: 8px; background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 4px; z-index: 20; }
@@ -39,7 +44,7 @@ a:hover { text-decoration-thickness: 2px; }
 
 .eyebrow { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
 
-.chip { font-size: 12px; line-height: 1; padding: 4px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.chip { font-size: 12px; line-height: 1; padding: 4px 9px; border-radius: 999px; background: var(--accent-light); color: var(--deep); }
 
 /* photo banner (About / Portfolio) and shared buttons */
 .banner { margin: 28px 0 0; border-radius: 14px; overflow: hidden; aspect-ratio: 21 / 8; background: var(--surface); }
@@ -48,9 +53,9 @@ a:hover { text-decoration-thickness: 2px; }
   display: inline-block; padding: 11px 24px; border-radius: 999px; border: 1px solid var(--accent);
   background: var(--accent); color: var(--bg); font-size: 15px; font-weight: 700; text-decoration: none;
 }
-.btn:hover { filter: brightness(1.1); text-decoration: none; }
+.btn:hover { background: var(--deep); border-color: var(--deep); text-decoration: none; }
 .btn.ghost { background: transparent; color: var(--accent); }
-.btn.ghost:hover { background: var(--accent-soft); filter: none; }
+.btn.ghost:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--deep); }
 
 /* header */
 .topbar {
@@ -61,7 +66,7 @@ a:hover { text-decoration-thickness: 2px; }
 }
 .topbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 12px; padding-bottom: 12px; }
 .wordmark { font-size: 20px; font-weight: 700; margin: 0; letter-spacing: 0.02em; }
-.wordmark a { color: var(--ink); text-decoration: none; }
+.wordmark a { color: var(--deep); text-decoration: none; }
 .wordmark span { color: var(--accent); }
 .topnav { display: flex; flex-wrap: wrap; gap: 4px 20px; list-style: none; margin: 0; padding: 0; font-size: 14.5px; }
 .topnav a { color: var(--ink-soft); text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent; }
@@ -103,10 +108,10 @@ h1, h2, h3 { text-wrap: balance; }
 .lang-switch details[open] .chev { transform: rotate(180deg); }
 .lang-switch .lang-list {
   position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; min-width: 130px; margin: 0; padding: 4px 0; list-style: none;
-  background: var(--bg); border: 1px solid var(--border-strong); border-radius: 6px; box-shadow: 0 6px 18px rgba(38, 42, 33, 0.08);
+  background: var(--bg); border: 1px solid var(--border-strong); border-radius: 6px; box-shadow: 0 6px 18px rgba(37, 43, 45, 0.08);
 }
 .topnav .lang-list a { display: block; padding: 6px 16px; border: 0; color: var(--ink); line-height: 1.6; white-space: nowrap; }
-.topnav .lang-list a:hover { background: var(--accent-soft); color: var(--accent); }
+.topnav .lang-list a:hover { background: var(--accent-soft); color: var(--deep); }
 .topnav .lang-list a[aria-current="true"] { color: var(--accent); font-weight: 700; }
 @media (max-width: 640px) {            /* phones: next to the site name, top right */
   .topbar .wrap { position: relative; }
