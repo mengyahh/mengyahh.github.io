@@ -45,7 +45,7 @@ The organisations and projects I work with are mostly about **humanities, ecolog
 ::: projects Projects
 ## What kind of work and projects I've done
 
-Each project involves more than one kind of work.
+Whatever the project or job, the roles I take on are many.
 
 ### 2024– Digital transformation and improvement for a micro non-profit
 Mindset coaching, designing internal workflows, building websites or systems
