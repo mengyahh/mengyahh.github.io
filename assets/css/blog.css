@@ -110,7 +110,7 @@ mark { background: var(--accent-soft); color: inherit; border-radius: 3px; paddi
 .post-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 56px; margin-bottom: 8px; }
 .pn { display: block; padding: 16px 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--ink); text-decoration: none; min-width: 0; }
 .pn small { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-.pn span { display: block; font-size: 15.5px; line-height: 1.5; font-weight: 600; }
+.pn > span { display: block; font-size: 15.5px; line-height: 1.5; font-weight: 600; }
 a.pn:hover { border-color: var(--accent); }
 .pn.newer { text-align: right; order: 2; }
 .pn.older { order: 1; }
