@@ -28,6 +28,32 @@ EMAIL = 'mengyahh@gmail.com'
 INSTAGRAM = 'https://www.instagram.com/mengyahh'
 GOATCOUNTER = os.environ.get('GOATCOUNTER', 'mengyahh')    # -> https://mengyahh.goatcounter.com (set GOATCOUNTER= to build without tracking)
 esc = html.escape
+
+_BREAK_AFTER = '：，、；！？｜。'                # a title may wrap after these (full-width)
+_NO_BREAK_BEFORE = '」』）〕】》〉，。、！？：；｜'    # …but not when one of these follows: closing marks never start a line
+
+
+def title_html(text):
+    """Escaped title; in Chinese it is cut into phrases at punctuation, each an unbreakable inline-block (.ph), so a long title wraps
+    only after ：，、；！？｜。 and never inside a word like 準備. Closing marks stay with the phrase before. English and Japanese
+    titles are left to the browser's own line breaking."""
+    text = text.strip()
+    if LANG != 'zh':
+        return esc(text)
+    parts, buf = [], ''
+    for i, ch in enumerate(text):
+        buf += ch
+        nxt = text[i + 1] if i + 1 < len(text) else ''
+        if ch in _BREAK_AFTER and nxt and nxt not in _NO_BREAK_BEFORE:
+            parts.append(buf)
+            buf = ''
+    if buf:
+        parts.append(buf)
+    if len(parts) < 2:
+        return esc(text)
+    return ''.join(f'<span class="ph">{esc(p)}</span>' for p in parts)
+
+
 AUTHOR = '萌芽'
 DEFAULT_OG = 'assets/img/banner.webp'        # share image for pages that have no photo of their own
 
@@ -320,7 +346,7 @@ def render_entry(e):
     # text first in the DOM (reading order); CSS puts the photos on the right / above on phones
     return (f'<article class="{cls}" id="{esc(e["id"])}">'
             f'<div class="text"><div class="meta"><time>{fmt_date(e["date"])}</time>{place}</div>'
-            f'<h3><a href="#{esc(e["id"])}">{esc(e["title"])}</a></h3>{body}</div>'
+            f'<h3><a href="#{esc(e["id"])}">{title_html(e["title"])}</a></h3>{body}</div>'
             f'{render_media(e)}</article>')
 
 
@@ -423,7 +449,7 @@ def build_blog_index(articles):
                 f'<li class="post-row" data-slug="{a["slug"]}" data-cats="{esc("|".join(cats_sorted))}"><a href="{a["slug"]}/">'
                 f'<div class="row-text"><p class="row-meta"><time datetime="{a["date"]}">{date_disp(a)}</time>'
                 f'{chips}</p>'
-                f'<h3>{esc(a["title"])}</h3><p class="row-abs">{esc(short(a["abstract"], 120))}</p></div>{cover}</a></li>')
+                f'<h3>{title_html(a["title"])}</h3><p class="row-abs">{esc(short(a["abstract"], 120))}</p></div>{cover}</a></li>')
         sections.append(f'<section class="year" id="y{y}" data-year="{y}"><h2 class="serif">{y}</h2>'
                         f'<ul class="post-list">{"".join(rows)}</ul></section>')
     cat_widgets = ''.join(
@@ -433,7 +459,7 @@ def build_blog_index(articles):
         + '</ul></section>'
         for title, names in category_groups(articles))
     year_chips = ''.join(f'<li><a href="#y{y}" data-year="{y}" aria-pressed="false">{y}</a></li>' for y in years)
-    recent = ''.join(f'<li><a href="{a["slug"]}/">{esc(a["title"])}</a></li>' for a in articles[:5])
+    recent = ''.join(f'<li><a href="{a["slug"]}/">{title_html(a["title"])}</a></li>' for a in articles[:5])
     recent_comments = (f'<section class="widget rc-widget" data-api="{esc(COMMENTS_API)}" hidden><h2>{S["recent_comments"]}</h2>'
                        f'<ul class="recent rc-list"></ul></section>') if COMMENTS_API and LANG == 'zh' else ''
     body = f"""<div class="wrap">
@@ -524,7 +550,7 @@ def build_post(a, newer, older, alts=None):
         if not art:
             return f'<span class="pn {cls} empty"></span>'
         return (f'<a class="pn {cls}" href="../{art["slug"]}/"><small>{label}</small>'
-                f'<span class="serif">{esc(art["title"])}</span></a>')
+                f'<span class="serif">{title_html(art["title"])}</span></a>')
 
     c = a.get('cover')
     cover_html = (f'<figure class="post-cover narrow"><img src="{UP}../../assets/{c["src"]}" width="{c["w"]}" height="{c["h"]}" alt="" decoding="async"></figure>'
@@ -532,7 +558,7 @@ def build_post(a, newer, older, alts=None):
     body = f'''<article class="post">
   <header class="post-head narrow">
     <p class="eyebrow"><a href="../">{S['blog_h1']}</a></p>
-    <h1>{esc(a["title"])}</h1>
+    <h1>{title_html(a["title"])}</h1>
     <p class="post-meta">{meta}</p>
     {f'<div class="tags">{tags}</div>' if tags else ''}
   </header>

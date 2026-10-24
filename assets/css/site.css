@@ -138,3 +138,6 @@ h1, h2, h3 { text-wrap: balance; }
 .to-top:hover { border-color: var(--accent); color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .to-top { transition: none; } }
 @media print { .to-top { display: none; } }
+
+/* long titles: cut into phrases at punctuation (see title_html in scripts/build.py); a phrase is never broken in the middle */
+.ph { display: inline-block; vertical-align: top; }
