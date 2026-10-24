@@ -47,7 +47,7 @@ The organisations and projects I work with are mostly about **humanities, ecolog
 
 Each project involves more than one kind of work.
 
-### Government policy and knowledge-outreach projects
+### 2020–2021 Government policy and knowledge-outreach projects
 Content planning and proposals, project management, main point of contact (internal and external)
 
 ### 2024– Digital transformation and improvement for a micro non-profit
