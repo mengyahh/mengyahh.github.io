@@ -47,20 +47,20 @@ The organisations and projects I work with are mostly about **humanities, ecolog
 
 Each project involves more than one kind of work.
 
-### 2020–2021 Government policy and knowledge-outreach projects
-Content planning and proposals, project management, main point of contact (internal and external)
-
 ### 2024– Digital transformation and improvement for a micro non-profit
 Mindset coaching, designing internal workflows, building websites or systems
 
 ### 2025 Website for a non-profit [Taiwan Heritage Society](https://www.thstaiwanheritage.org.tw/)
 Domain purchase and DNS setup, visual design, building the site, migrating the data
 
+### 2025 Security handbook [Information Security Guide for NPOs (in Chinese)](https://www.xn--npo-0i3er88a2jlth5e.tw/)
+Writing the content (with AI), illustrations, layout, web version
+
 ### 2024–2025 Building up and promoting cultural-policy content [Taiwan Cultural Route (in Chinese)](https://twculturalroute.boch.gov.tw/home/zh-tw)
 Turning cultural-policy theory into plain language, event photography, video editing, graphic design
 
-### 2025 Security handbook [Information Security Guide for NPOs (in Chinese)](https://www.xn--npo-0i3er88a2jlth5e.tw/)
-Writing the content (with AI), illustrations, layout, web version
+### 2023–2025 Climbing and mountaineering gym
+Front desk, coach, route setter
 
 ### 2024 Research on the history and industrial development of a river basin
 Literature collection, organising data, summarising talks and meetings
@@ -71,8 +71,8 @@ Planning, managing and liaising with stalls, social media graphics, graphic desi
 ### 2021–2023 Making content about stream issues [Island Stream Guide 島讀河溪](portfolio/daodu-hexi/)
 Teaching slides, a themed website, video production and editing, social media posts, teaching assistant at events, leading school classes
 
-### 2023–2025 Climbing and mountaineering gym
-Front desk, coach, route setter
+### 2020–2021 Government policy and knowledge-outreach projects
+Content planning and proposals, project management, main point of contact (internal and external)
 
 ---
 
