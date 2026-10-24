@@ -43,7 +43,7 @@ The organisations and projects I work with are mostly about **humanities, ecolog
 :::
 
 ::: projects Projects
-## What kind of projects I've done
+## What kind of work and projects I've done
 
 Each project involves more than one kind of work.
 
@@ -70,6 +70,9 @@ Planning, managing and liaising with stalls, social media graphics, graphic desi
 
 ### 2021–2023 Making content about stream issues [Island Stream Guide 島讀河溪](portfolio/daodu-hexi/)
 Teaching slides, a themed website, video production and editing, social media posts, teaching assistant at events, leading school classes
+
+### 2023–2025 Climbing and mountaineering gym
+Front desk, coach, route setter
 
 ---
 
