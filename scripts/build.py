@@ -598,10 +598,12 @@ def build_home(entries, articles):
     thumbs = ''.join(
         f'<a href="cooking/"><img src="{UP}assets/cooking/{im["thumb"]}" width="{im["w"]}" height="{im["h"]}" alt="" loading="lazy"></a>'
         for im in latest)
-    def first_label(a):                       # the first category, in the same order as the blog list shows them
+    def first_label(a):                       # Chinese only: the first category, in the same order as the blog list shows them
         cats = sort_cats(a['categories'])
-        return f'<span class="chip">{esc(cat_label(cats[0]))}</span>' if cats else ''
-    posts = ''.join(f'<li><a href="blog/{a["slug"]}/"><time>{date_disp(a)}</time><span class="lbl">{first_label(a)}</span>'
+        if LANG != 'zh':
+            return ''
+        return f'<span class="lbl">{f"""<span class="chip">{esc(cat_label(cats[0]))}</span>""" if cats else ""}</span>'
+    posts = ''.join(f'<li><a href="blog/{a["slug"]}/"><time>{date_disp(a)}</time>{first_label(a)}'
                     f'<span class="lt">{esc(a["title"])}</span></a></li>'
                     for a in articles[:5])
     body = f'''<div class="wrap">
