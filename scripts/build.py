@@ -180,7 +180,8 @@ def prefix(lang):
 
 # Google Fonts per language: body = Noto Sans, headings = Noto Serif (English) / Chiron GoRound TC (Chinese) / Kiwi Maru (Japanese)
 FONT_FAMILIES = {
-    'en': 'IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700',
+    'en': 'IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700'
+          '&family=Source+Sans+3:wght@400..700&family=Source+Serif+4:wght@500..700',
     'zh': 'IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Chiron+GoRound+TC:wght@400..700',
     'ja': 'IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&family=Kiwi+Maru:wght@400;500',
 }
