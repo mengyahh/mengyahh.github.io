@@ -1,7 +1,7 @@
 /* 工作 (work) pages: /work/, /work/appsheet/…, /work/portfolio/…  — everything is scoped to .work */
 .work {
   --w-sans: "Noto Sans TC", sans-serif;
-  --w-serif: "Noto Serif TC", serif;
+  --w-serif: var(--display);
   --moss: var(--accent);
   --sprout: var(--accent);
   --ink-muted: var(--muted);
@@ -201,7 +201,7 @@
   .work .offer { padding: 12px 14px 14px; }
 }
 
-html[lang="ja"] .work { --w-sans: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; --w-serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif; }
+html[lang="ja"] .work { --w-sans: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; }
 
 /* "about the maker" on the stand-alone AppSheet page: short, at the end */
 .work .maker { display: flex; gap: 28px; align-items: flex-start; }

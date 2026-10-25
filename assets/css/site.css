@@ -15,7 +15,11 @@
   --border: rgba(37, 43, 45, 0.12);
   --border-strong: rgba(37, 43, 45, 0.28);
   --shadow: 0 1px 2px rgba(37, 43, 45, 0.06), 0 8px 24px rgba(37, 43, 45, 0.06);
+  /* heading font: English keeps Noto Serif; Chinese uses Chiron GoRound TC; Japanese uses Kiwi Maru */
+  --display: "Noto Serif TC", "Songti TC", serif;
 }
+html[lang="zh-Hant"] { --display: "Chiron GoRound TC", "PingFang TC", "Microsoft JhengHei", sans-serif; }
+html[lang="ja"] { --display: "Kiwi Maru", "Hiragino Mincho ProN", "Yu Mincho", serif; font-synthesis: style; }   /* Kiwi Maru has no bold: never fake one */
 
 /* comfortable line length: ~46 characters for Chinese / Japanese (1em = one character); ~68 characters for English */
 :root { --measure: 46em; }
@@ -35,7 +39,7 @@ img { max-width: 100%; height: auto; }
 a { color: var(--accent); text-underline-offset: 3px; }
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
-.serif, h1, h2, h3, .wordmark { font-family: "Noto Serif TC", "Songti TC", serif; }
+.serif, h1, h2, h3, .wordmark { font-family: var(--display); }
 h1, h2, h3 { color: var(--deep); }
 .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace; }
 .wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
@@ -75,7 +79,7 @@ h1, h2, h3 { color: var(--deep); }
 
 /* footer */
 footer { margin-top: 72px; border-top: 1px solid var(--border); padding: 40px 0 64px; color: var(--ink-soft); font-size: 14px; }
-footer .bio { font-family: "Noto Serif TC", serif; font-size: 17px; color: var(--ink); margin: 0 0 6px; }
+footer .bio { font-family: var(--display); font-size: 17px; color: var(--ink); margin: 0 0 6px; }
 footer p { margin: 0 0 10px; }
 footer .links { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 14px; }
 footer .copy { margin-top: 26px; font-size: 12.5px; color: var(--muted); }
@@ -88,8 +92,6 @@ footer .copy { margin-top: 26px; font-size: 12.5px; color: var(--muted); }
 }
 
 html[lang="ja"] body { font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; }
-html[lang="ja"] .serif, html[lang="ja"] h1, html[lang="ja"] h2, html[lang="ja"] h3, html[lang="ja"] .wordmark { font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif; }
-html[lang="ja"] footer .bio { font-family: "Noto Serif JP", serif; }
 /* English: justified inter-character spacing is for CJK text only */
 html[lang="en"] .prose p, html[lang="en"] .prose li, html[lang="en"] .body p, html[lang="en"] .body li,
 html[lang="en"] .sec-body p, html[lang="en"] .sec-body li { text-align: left; text-justify: auto; }

@@ -179,7 +179,7 @@ a.pn:hover { border-color: var(--accent); }
 .c-avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; display: block; background: var(--surface); }
 .c-avatar .av-bg { fill: var(--surface); }
 .c-avatar.is-owner .av-bg { fill: var(--accent); }
-.c-avatar .av-mark { fill: var(--bg); font: 700 21px "Noto Serif TC", serif; }
+.c-avatar .av-mark { fill: var(--bg); font: 700 21px var(--display); }
 .c-avatar .av-fg { fill: var(--muted); opacity: .55; }
 .c-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin-bottom: 4px; }
 .c-name { font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }

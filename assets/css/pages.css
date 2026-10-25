@@ -4,7 +4,7 @@
 .page-head .lede { color: var(--ink-soft); margin: 0; max-width: var(--measure); }
 
 .quote { margin: 8px 0 16px; padding: 0 0 0 20px; border-left: 3px solid var(--accent); max-width: 40em; }
-.quote p { margin: 0; font-family: "Noto Serif TC", serif; font-size: 18px; line-height: 1.9; color: var(--ink); }
+.quote p { margin: 0; font-family: var(--display); font-size: 18px; line-height: 1.9; color: var(--ink); }
 .quote cite { display: block; margin-top: 8px; font-size: 14px; font-style: normal; color: var(--muted); }
 
 /* about sections: title + tags on the left, text on the right */

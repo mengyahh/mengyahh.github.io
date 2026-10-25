@@ -178,13 +178,18 @@ def prefix(lang):
     return '' if lang == 'zh' else f'/{lang}'
 
 
-FONTS_JA = ('&family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700')
+# Google Fonts per language: body = Noto Sans, headings = Noto Serif (English) / Chiron GoRound TC (Chinese) / Kiwi Maru (Japanese)
+FONT_FAMILIES = {
+    'en': 'IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700',
+    'zh': 'IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Chiron+GoRound+TC:wght@400..700',
+    'ja': 'IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&family=Kiwi+Maru:wght@400;500',
+}
 
 
-FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
-         '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
-         '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500'
-         '&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap">')
+def fonts_html(lang):
+    return ('<link rel="preconnect" href="https://fonts.googleapis.com">'
+            '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+            f'<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={FONT_FAMILIES[lang]}&display=swap">')
 
 
 def resolve(s, base):
@@ -234,7 +239,7 @@ def layout(*, base, title, desc, path, body, current, css=(), js=(), og_image=No
     og += jsonld(*structured)
     styles = ''.join(f'<link rel="stylesheet" href="{base}{UP}assets/css/{c}.css">' for c in ('site',) + tuple(css))
     scripts = ''.join(f'<script src="{base}{UP}assets/js/{j}.js" defer></script>' for j in ('nav', 'top') + tuple(js))
-    fonts = FONTS.replace('&display=swap', FONTS_JA + '&display=swap') if LANG == 'ja' else FONTS
+    fonts = fonts_html(LANG)
     analytics = ''
     stats_note = ''
     if GOATCOUNTER:
