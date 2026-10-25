@@ -600,7 +600,7 @@ def build_post(a, newer, older, alts=None):
 
 def build_home(entries, articles):
     work_rel = 'work/' if LANG in WORK_LANGS else f'{UP}work/'
-    latest = [im for e in entries for im in e['images']][:4]
+    latest = [im for e in entries for im in e['images']][:8]
     thumbs = ''.join(
         f'<a href="cooking/"><img src="{UP}assets/cooking/{im["thumb"]}" width="{im["w"]}" height="{im["h"]}" alt="" loading="lazy"></a>'
         for im in latest)
